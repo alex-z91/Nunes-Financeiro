@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f7f5">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>Sistema Financeiro</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231BFF85'/%3E%3Ctext x='16' y='24' text-anchor='middle' font-family='Urbanist' font-size='24' fill='white'%3E$%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Ir para o conteúdo</a>
+  <div id="notice" role="status" aria-live="polite" hidden></div>
+  <section id="auth" class="auth-screen" aria-label="Acesso à conta">
+    <div class="auth-container">
+      <img class="auth-brand" src="icons/brand-nunes.svg" alt="" aria-hidden="true">
+      <p class="slogan">Finanças organizadas. Decisões mais claras.</p>
+      <div class="login-box">
+        <div class="login-heading"><span class="eyebrow">Bem-vindo</span><h1>Sistema Financeiro</h1><p>Entre para acompanhar receitas, despesas e compromissos em um só lugar.</p></div>
+        <p id="authLoading" role="status">Carregando acesso…</p>
+        <form id="loginForm" hidden>
+          <label for="emailLogin">E-mail</label><input id="emailLogin" name="email" type="email" autocomplete="username" required>
+          <label for="senhaLogin">Senha</label><input id="senhaLogin" name="password" type="password" autocomplete="current-password" required>
+          <label class="check-row" for="rememberLogin"><input id="rememberLogin" type="checkbox"> <span>Manter conectado neste dispositivo</span></label>
+          <button class="primary" type="submit">Entrar</button>
+          <button class="link" type="button" data-auth="registerForm">Novo usuário? Criar conta</button>
+          <button class="link" type="button" data-auth="resetForm">Esqueceu a senha?</button>
+        </form>
+        <form id="registerForm" hidden>
+          <h2>Nova conta</h2>
+          <label for="nomeCadastro">Nome</label><input id="nomeCadastro" name="nome" autocomplete="given-name" maxlength="80" required>
+          <label for="sobrenomeCadastro">Sobrenome</label><input id="sobrenomeCadastro" name="sobrenome" autocomplete="family-name" maxlength="80" required>
+          <label for="apelidoCadastro">Como quer ser chamado? (opcional)</label><input id="apelidoCadastro" name="apelido" maxlength="80">
+          <label for="emailCadastro">E-mail</label><input id="emailCadastro" name="email" type="email" autocomplete="email" required>
+          <label for="senhaCadastro">Senha (mínimo 6 caracteres)</label><input id="senhaCadastro" name="password" type="password" autocomplete="new-password" minlength="6" required>
+          <label for="confirmaSenha">Repita a senha</label><input id="confirmaSenha" name="confirm" type="password" autocomplete="new-password" minlength="6" required>
+          <label for="fotoCadastro">Foto (opcional)</label><input id="fotoCadastro" type="file" accept="image/png,image/jpeg,image/webp">
+          <button class="primary" type="submit">Criar conta</button><button class="link" type="button" data-auth="loginForm">Voltar ao login</button>
+        </form>
+        <form id="resetForm" hidden>
+          <h2>Recuperar senha</h2>
+          <label for="emailRecuperacao">E-mail</label><input id="emailRecuperacao" name="email" type="email" autocomplete="email" required>
+          <button class="primary" type="submit">Enviar link de recuperação</button><button class="link" type="button" data-auth="loginForm">Voltar ao login</button>
+        </form>
+        <p id="authError" role="alert"></p>
+      </div>
+      <footer class="developer-footer">Sistema Financeiro · acesso seguro aos seus dados</footer>
+    </div>
+  </section>
+  <div id="app" hidden>
+    <div class="app-shell">
+      <aside id="desktopSidebar" class="desktop-sidebar" aria-label="Navegação principal">
+        <div class="sidebar-brand-row">
+          <div class="sidebar-brand"><span class="brand-mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1276.31 1276.31" aria-hidden="true" focusable="false"><path fill="#5FB88A" d="M0 0h1101.99c95.87 0 174.32 78.45 174.32 174.32v927.67c0 95.87-78.45 174.32-174.32 174.32H174.32C78.44 1276.31 0 1197.86 0 1101.99V0z"/><path fill="#fff" d="M387.83 247.89h446.35c14.26 0 26.09 11.78 26.09 26.17v106.4c0 14.39-11.83 26.17-26.09 26.17H513.69l348.62 373.09V468.15c0-14.53 11.78-26.25 26.17-26.25h106.4c14.39 0 26.17 11.73 26.17 26.25v534.02c0 14.53-11.78 26.25-26.17 26.25h-106.4c-8.5 0-16.09-4.09-20.88-10.44L414 532.37V804.8c0 14.44-11.78 26.1-26.17 26.1h-106.4c-14.39 0-26.17-11.66-26.17-26.1V273.99c0-14.44 11.78-26.1 26.17-26.1h106.4z"/></svg></span><strong class="sidebar-label">Meu Financeiro</strong></div>
+          <button id="sidebarCollapse" class="icon-button sidebar-collapse" type="button" aria-label="Recolher menu lateral" aria-pressed="false"><i data-lucide="panel-left-close" aria-hidden="true"></i></button>
+        </div>
+        <nav class="sidebar-nav">
+          <button type="button" data-page="inicio" aria-current="page"><i data-lucide="layout-dashboard" aria-hidden="true"></i><span class="sidebar-label">Visão geral</span></button>
+          <button type="button" data-page="receitas"><i data-lucide="trending-up" aria-hidden="true"></i><span class="sidebar-label">Receitas</span></button>
+          <button type="button" data-page="despesas"><i data-lucide="trending-down" aria-hidden="true"></i><span class="sidebar-label">Despesas</span></button>
+          <button type="button" data-page="economia"><i data-lucide="piggy-bank" aria-hidden="true"></i><span class="sidebar-label">Economia</span></button>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="settings-anchor">
+            <button id="settingsToggle" class="sidebar-settings" type="button" aria-controls="settingsMenu" aria-expanded="false"><i data-lucide="settings-2" aria-hidden="true"></i><span class="sidebar-label">Configurações</span><i class="settings-chevron sidebar-label" data-lucide="chevron-right" aria-hidden="true"></i></button>
+            <div id="settingsMenu" class="settings-menu" hidden>
+              <button type="button" data-page="configuracoes"><i data-lucide="sliders-horizontal" aria-hidden="true"></i><span>Configurações</span></button>
+              <button type="button" data-logout class="settings-logout"><i data-lucide="log-out" aria-hidden="true"></i><span>Sair</span></button>
+            </div>
+          </div>
+        </div>
+      </aside>
+      <div class="app-main">
+        <header class="topbar">
+          <div class="user-greeting">
+            <span id="avatarInitials" class="avatar" aria-hidden="true">U</span><img id="avatarImage" class="avatar" alt="" hidden>
+            <div class="greeting-copy"><span class="eyebrow">Bem-vindo</span><strong>Olá, <span id="userName">usuário</span>!</strong></div>
+          </div>
+          <div class="top-actions">
+            <button id="notificationButton" class="icon-button top-action" type="button" aria-label="Notificações"><i data-lucide="bell" aria-hidden="true"></i><span class="notification-dot" hidden></span></button>
+            <button id="headerLogoutButton" class="icon-button top-action" type="button" aria-label="Sair da conta"><i data-lucide="log-out" aria-hidden="true"></i></button>
+          </div>
+        </header>
+        <div class="layout">
+      <main id="main" tabindex="-1">
+        <p id="connectionStatus" class="muted" role="status">Carregando dados…</p>
+        <div id="reviewNotice" class="warning" hidden></div>
+        <section id="page-inicio" class="page dashboard-page">
+          <div class="dashboard-heading">
+            <div class="dashboard-heading-copy"><h1>Visão financeira</h1><p>Resumo do período e o que precisa da sua atenção.</p></div>
+            <div class="period dashboard-period"><label for="monthFilter">Período</label><input id="monthFilter" type="month" required></div>
+          </div>
+          <div class="dashboard-grid">
+            <button type="button" class="dashboard-card dashboard-income" data-dashboard-detail="receitas" aria-label="Ver detalhes das receitas do período">
+              <div class="dashboard-card-head"><span>Receita</span><span class="dashboard-card-icon income"><i data-lucide="arrow-down-left" aria-hidden="true"></i></span></div>
+              <strong id="incomeTotal" class="dashboard-main-value income">R$ 0,00</strong>
+              <div class="dashboard-submetrics">
+                <div><span>Recebido</span><strong id="incomeReceived">R$ 0,00</strong></div>
+                <div><span>A receber</span><strong id="incomeReceivable">R$ 0,00</strong></div>
+              </div>
+            </button>
+            <button type="button" class="dashboard-card dashboard-expense" data-dashboard-detail="despesas" aria-label="Ver detalhes das despesas do período">
+              <div class="dashboard-card-head"><span>Despesa</span><span class="dashboard-card-icon expense"><i data-lucide="arrow-up-right" aria-hidden="true"></i></span></div>
+              <strong id="expenseTotal" class="dashboard-main-value expense">R$ 0,00</strong>
+              <div class="dashboard-submetrics">
+                <div><span>Pago</span><strong id="expensePaid">R$ 0,00</strong></div>
+                <div><span>A pagar</span><strong id="expensePayable">R$ 0,00</strong></div>
+              </div>
+            </button>
+            <button type="button" class="dashboard-card dashboard-flow" data-dashboard-detail="fluxo" aria-label="Ver detalhes do fluxo do período">
+              <div class="dashboard-card-head"><span>Fluxo</span><span class="dashboard-card-icon"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i></span></div>
+              <div class="flow-balance-line"><div><span>Balanço atual</span><strong id="actualBalanceTotal">R$ 0,00</strong></div><div class="flow-forecast"><span>Previsto</span><strong id="balanceTotal">R$ 0,00</strong></div></div>
+              <div class="flow-chart" aria-label="Comparação entre previsto e realizado">
+                <div class="flow-row"><div class="flow-row-label"><span>Receitas</span><span id="incomeProgressLabel">0%</span></div><div class="flow-track"><span id="incomeProgressBar" class="flow-fill income-fill"></span></div></div>
+                <div class="flow-row"><div class="flow-row-label"><span>Despesas</span><span id="expenseProgressLabel">0%</span></div><div class="flow-track"><span id="expenseProgressBar" class="flow-fill expense-fill"></span></div></div>
+              </div>
+              <div class="flow-meta"><span>Comprometimento <strong id="commitmentValue">0%</strong></span><span id="monthStatus" class="month-status">Sem dados</span></div>
+              <p id="monthDescription" class="flow-caption"></p><p id="actualSummary" class="sr-only"></p>
+            </button>
+            <section class="dashboard-card dashboard-commitments" aria-labelledby="commitmentsTitle">
+              <div class="dashboard-card-head"><div><span id="commitmentsTitle">Compromissos</span><strong id="commitmentCount" class="commitment-count">0 próximos</strong></div><span class="dashboard-card-icon"><i data-lucide="calendar-clock" aria-hidden="true"></i></span></div>
+              <ul id="commitmentList" class="commitment-list"></ul>
+              <button type="button" class="dashboard-text-action" data-page="despesas">Ver despesas <i data-lucide="arrow-right" aria-hidden="true"></i></button>
+            </section>
+          </div>
+          <section class="quadrant dashboard-notes"><div class="section-heading-inline"><div><span class="eyebrow">Apoio</span><h2>Anotações</h2></div></div><form id="noteForm"><label for="noteText">Nova anotação</label><div class="note-input"><input id="noteText" name="text" maxlength="1000" required><button class="primary" type="submit">Adicionar</button></div></form><ul id="notesList" class="entry-list"></ul></section>
+        </section>
+        <section id="page-receitas" class="page" hidden>
+          <span class="eyebrow">Entradas</span><h1>Minhas receitas</h1><p>Defina quando cada entrada deve acontecer.</p><button class="primary action-button" type="button" data-add="receitas"><i data-lucide="plus" aria-hidden="true"></i>Adicionar receita</button><ul id="incomeList" class="entry-list"></ul>
+        </section>
+        <section id="page-despesas" class="page" hidden>
+          <span class="eyebrow">Saídas</span><h1>Minhas despesas</h1><p>Organize pagamentos únicos, parcelas e despesas mensais.</p><button class="primary action-button" type="button" data-add="despesas"><i data-lucide="plus" aria-hidden="true"></i>Adicionar despesa</button><ul id="expenseList" class="entry-list"></ul>
+        </section>
+        <section id="page-economia" class="page" hidden>
+          <span class="eyebrow">Reserva</span><h1>Banco Economia</h1><p>Registre o que você guardou e o que precisou retirar da sua reserva.</p>
+          <div class="economy-layout">
+            <article class="mini-card economy-balance-card"><div class="metric-head"><span>Saldo guardado</span><div class="summary-icon"><i data-lucide="piggy-bank" aria-hidden="true"></i></div></div><strong id="economyBalance">R$ 0,00</strong><p class="muted">Movimentações independentes do fluxo mensal.</p></article>
+            <form id="economyForm" class="quadrant compact-form"><h2>Nova movimentação</h2>
+              <label for="economyName">Motivo</label><input id="economyName" maxlength="160" required placeholder="Ex.: Reserva de emergência">
+              <div class="form-grid"><div><label for="economyValue">Valor (R$)</label><input id="economyValue" type="number" min="0.01" step="0.01" inputmode="decimal" required></div>
+              <div><label for="economyKind">Tipo</label><select id="economyKind"><option value="deposit">Guardar</option><option value="withdraw">Retirar</option></select></div>
+              <div><label for="economyDate">Data</label><input id="economyDate" type="date" required></div></div>
+              <button class="primary" type="submit">Registrar movimentação</button><p id="economyError" role="alert"></p>
+            </form>
+          </div>
+          <section class="quadrant"><h2>Histórico da reserva</h2><ul id="economyList" class="entry-list"></ul></section>
+        </section>
+        <section id="page-configuracoes" class="page" hidden>
+          <span class="eyebrow">Preferências</span><h1>Configurações do sistema</h1>
+          <div class="settings-grid">
+            <form id="profileForm" class="quadrant"><h2>Perfil e aparência</h2>
+              <label for="profileName">Nome</label><input id="profileName" name="nome" autocomplete="given-name" maxlength="80" required>
+              <label for="profileSurname">Sobrenome</label><input id="profileSurname" name="sobrenome" autocomplete="family-name" maxlength="80" required>
+              <label for="profileNickname">Como quer ser chamado?</label><input id="profileNickname" name="apelido" maxlength="80" placeholder="Opcional">
+              <label for="profilePhoto">Foto de perfil</label><input id="profilePhoto" type="file" accept="image/png,image/jpeg,image/webp"><img id="photoPreview" class="avatar" alt="Prévia da foto" hidden>
+              <label for="themeSelect">Tema visual</label><select id="themeSelect"><option value="claro">Claro</option><option value="escuro">Escuro</option></select>
+              <label for="fontSelect">Fonte</label><select id="fontSelect"><option value="Urbanist, sans-serif">Urbanist</option><option value="system-ui, sans-serif">Sistema</option><option value="Georgia, serif">Georgia</option></select>
+              <button type="submit" class="primary">Salvar configurações</button>
+            </form>
+            <section class="quadrant danger-zone"><h2>Dados da conta</h2><p>Baixe uma cópia dos lançamentos antes de fazer alterações importantes.</p><button id="exportButton" type="button">Exportar cópia dos dados</button><p>A limpeza remove todas as receitas, despesas, reservas e anotações. Seu login e perfil são mantidos.</p><button id="clearButton" class="danger" type="button">Apagar dados financeiros</button></section>
+          </div>
+        </section>
+      </main>
+        </div>
+      </div>
+    </div>
+    <nav class="bottom-nav" aria-label="Navegação principal no celular">
+      <button type="button" data-page="inicio" aria-current="page" aria-label="Início"><i data-lucide="layout-dashboard" aria-hidden="true"></i><span>Início</span></button>
+      <button type="button" data-page="receitas" aria-label="Receitas"><i data-lucide="trending-up" aria-hidden="true"></i><span>Receitas</span></button>
+      <button type="button" data-page="despesas" aria-label="Despesas"><i data-lucide="trending-down" aria-hidden="true"></i><span>Despesas</span></button>
+      <button type="button" data-page="economia" aria-label="Economia"><i data-lucide="piggy-bank" aria-hidden="true"></i><span>Economia</span></button>
+      <button type="button" data-page="configuracoes" aria-label="Configurações"><i data-lucide="settings-2" aria-hidden="true"></i><span>Ajustes</span></button>
+    </nav>
+  </div>
+  <dialog id="dashboardDetailDialog" aria-labelledby="dashboardDetailTitle">
+    <div class="dialog-heading"><div><span id="dashboardDetailEyebrow" class="eyebrow">Resumo</span><h2 id="dashboardDetailTitle">Detalhes</h2></div><button type="button" id="closeDashboardDetail" class="icon-button" aria-label="Fechar detalhes"><i data-lucide="x" aria-hidden="true"></i></button></div>
+    <div id="dashboardDetailBody" class="dashboard-detail-body"></div>
+    <div class="form-actions"><button type="button" id="dashboardDetailAction" class="primary">Abrir seção</button></div>
+  </dialog>
+  <dialog id="entryDialog" aria-labelledby="entryTitle">
+    <form id="entryForm">
+      <div class="dialog-heading"><h2 id="entryTitle">Adicionar lançamento</h2><button type="button" id="closeEntry" class="icon-button" aria-label="Fechar edição"><i data-lucide="x" aria-hidden="true"></i></button></div>
+      <p id="entryHelp" class="muted"></p>
+      <label for="entryName">Descrição</label><input id="entryName" name="name" maxlength="160" required>
+      <div class="form-grid">
+        <div><label for="entryMode">Modalidade</label><select id="entryMode" name="mode"><option value="single">Única</option><option value="installments">Parcelada (valor total)</option><option value="monthly">Mensal (valor por mês)</option><option value="custom">Personalizada (meses escolhidos)</option><option value="legacy" hidden>Calendário existente</option></select></div>
+        <div><label id="valueLabel" for="entryValue">Valor (R$)</label><input id="entryValue" name="value" type="number" inputmode="decimal" min="0.01" step="0.01" required></div>
+        <div><label id="dateLabel" for="entryDate">Data prevista</label><input id="entryDate" name="date" type="date" min="1900-01-01" max="9999-12-31" required></div>
+        <div id="countField"><label for="entryCount">Quantidade de meses</label><input id="entryCount" name="count" type="number" min="1" max="360" step="1" value="1" required></div>
+        <div id="categoryField"><label for="entryCategory">Tipo de despesa</label><select id="entryCategory" name="category"><option>Fixa</option><option>Variável</option></select></div>
+      </div>
+      <fieldset id="customDates" hidden><legend>Competências escolhidas</legend><div class="custom-month-add"><input id="customMonthInput" type="month"><button id="addCustomMonth" type="button" class="soft">Adicionar mês</button></div><div id="customMonthList" class="month-chip-list"></div></fieldset>
+      <fieldset id="legacyDates" hidden><legend>Confirme os vencimentos existentes</legend><div id="legacyDatesList"></div></fieldset>
+      <p id="schedulePreview" class="muted"></p><p id="entryError" role="alert"></p>
+      <div class="form-actions"><button type="button" id="cancelEntry">Cancelar</button><button class="primary" type="submit">Salvar lançamento</button></div>
+    </form>
+  </dialog>
+  <dialog id="settleDialog" aria-labelledby="settleTitle"><form id="settleForm"><h2 id="settleTitle">Registrar pagamento</h2><p id="settleSummary" class="muted"></p><label for="settleValue">Valor desta baixa (R$)</label><input type="number" id="settleValue" min="0.01" step="0.01" inputmode="decimal" required><label for="settleDate">Data efetiva</label><input type="date" id="settleDate" required><div id="paymentHistory" class="payment-history"></div><p id="settleError" role="alert"></p><div class="form-actions"><button type="button" id="cancelSettle">Cancelar</button><button type="submit" class="primary">Registrar</button></div></form></dialog>
+  <dialog id="clearDialog" aria-labelledby="clearTitle"><form id="clearForm"><h2 id="clearTitle">Apagar dados financeiros?</h2><p>Esta ação remove todas as receitas, despesas, movimentações de economia e anotações da conta.</p><label for="clearConfirmation">Digite APAGAR para confirmar</label><input id="clearConfirmation" required pattern="APAGAR" autocomplete="off"><p id="clearError" role="alert"></p><div class="form-actions"><button type="button" id="cancelClear">Cancelar</button><button type="submit" class="danger">Apagar definitivamente</button></div></form></dialog>
+  <noscript>Ative o JavaScript para acessar o sistema financeiro.</noscript>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script>window.lucide?.createIcons();</script>
+  <script type="module" src="js/app.js"></script>
+  <script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js").catch(()=>{}));}</script>
+</body>
+</html>

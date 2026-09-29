@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+    function validFinance() {
+      let d = request.resource.data;
+      return d.schemaVersion == 3
+        && d.revision is int && d.revision >= 1
+        && d.receitas is list && d.receitas.size() <= 5000
+        && d.despesas is list && d.despesas.size() <= 5000
+        && d.itens is list && d.itens.size() <= 1000
+        && d.economia is list && d.economia.size() <= 5000;
+    }
+    function validRevisionStep() {
+      return (!('schemaVersion' in resource.data) && request.resource.data.revision == 1)
+        || (resource.data.schemaVersion == 1 && request.resource.data.revision >= 1)
+        || (resource.data.schemaVersion == 2 && request.resource.data.revision == resource.data.revision + 1)
+        || (resource.data.schemaVersion == 3 && request.resource.data.revision == resource.data.revision + 1);
+    }
+    match /financeiro/{uid} {
+      allow read: if owner(uid);
+      allow create: if owner(uid) && validFinance() && request.resource.data.revision == 1;
+      allow update: if owner(uid) && validFinance() && validRevisionStep();
+      allow delete: if false;
+    }
+    match /usuarios/{uid} {
+      allow read: if owner(uid);
+      allow create, update: if owner(uid)
+        && request.resource.data.keys().hasOnly(['nome','sobrenome','apelido','email','fotoPerfil','temaPadrao','fontePadrao'])
+        && request.resource.data.nome is string && request.resource.data.nome.size() > 0 && request.resource.data.nome.size() <= 80
+        && request.resource.data.sobrenome is string && request.resource.data.sobrenome.size() > 0 && request.resource.data.sobrenome.size() <= 80
+        && (!('apelido' in request.resource.data) || (request.resource.data.apelido is string && request.resource.data.apelido.size() <= 80))
+        && (!('email' in request.resource.data) || (request.resource.data.email is string && request.resource.data.email.size() <= 254))
+        && (!('fotoPerfil' in request.resource.data) || (request.resource.data.fotoPerfil is string && request.resource.data.fotoPerfil.size() <= 150000))
+        && (!('temaPadrao' in request.resource.data) || request.resource.data.temaPadrao in ['claro','escuro'])
+        && (!('fontePadrao' in request.resource.data) || (request.resource.data.fontePadrao is string && request.resource.data.fontePadrao.size() <= 80));
+      allow delete: if false;
+    }
+  }
+}
