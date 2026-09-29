@@ -187,8 +187,45 @@
           <section class="quadrant dashboard-notes"><div class="section-heading-inline"><div><span class="eyebrow">Apoio</span><h2>Anotações</h2></div></div><form id="noteForm"><label for="noteText">Nova anotação</label><div class="note-input"><input id="noteText" name="text" maxlength="1000" required><button class="primary" type="submit">Adicionar</button></div></form><ul id="notesList" class="entry-list"></ul></section>
         </section>
 
-        <section id="page-receitas" class="page" hidden>
-          <span class="eyebrow">Entradas</span><h1>Minhas receitas</h1><p>Defina quando cada entrada deve acontecer.</p><button class="primary action-button" type="button" data-add="receitas"><i data-lucide="plus" aria-hidden="true"></i>Adicionar receita</button><ul id="incomeList" class="entry-list"></ul>
+        <section id="page-receitas" class="page statement-page" hidden>
+          <div class="statement-page-header">
+            <div>
+              <span class="eyebrow">Entradas</span>
+              <h1>Minhas receitas</h1>
+              <p>Acompanhe o que estava previsto, o que entrou e o que ainda falta receber.</p>
+            </div>
+            <button class="primary action-button" type="button" data-add="receitas"><i data-lucide="plus" aria-hidden="true"></i>Adicionar receita</button>
+          </div>
+          <section class="statement-summary" aria-label="Resumo das receitas filtradas">
+            <div><span>Previsto</span><strong id="incomeStatementPlanned">R$ 0,00</strong></div>
+            <div><span>Recebido</span><strong id="incomeStatementReceived" class="income">R$ 0,00</strong></div>
+            <div><span>A receber</span><strong id="incomeStatementPending">R$ 0,00</strong></div>
+          </section>
+          <section class="statement-toolbar" aria-label="Filtros das receitas">
+            <div class="statement-search">
+              <i data-lucide="search" aria-hidden="true"></i>
+              <label class="sr-only" for="incomeSearch">Buscar receita</label>
+              <input id="incomeSearch" type="search" autocomplete="off" placeholder="Buscar receita">
+            </div>
+            <div class="statement-filters">
+              <div class="statement-scope" role="group" aria-label="Período das receitas">
+                <button type="button" data-income-scope="month" aria-pressed="true">Período</button>
+                <button type="button" data-income-scope="all" aria-pressed="false">Todos</button>
+              </div>
+              <label class="sr-only" for="incomeMonthFilter">Mês das receitas</label>
+              <input id="incomeMonthFilter" type="month">
+              <label class="sr-only" for="incomeStatusFilter">Status das receitas</label>
+              <select id="incomeStatusFilter">
+                <option value="all">Todos os status</option>
+                <option value="received">Recebido</option>
+                <option value="partial">Parcial</option>
+                <option value="pending">A receber</option>
+              </select>
+            </div>
+          </section>
+          <div class="statement-list-head"><span id="incomeResultCount">0 lançamentos</span><span>Extrato de receitas</span></div>
+          <ul id="incomeList" class="statement-list"></ul>
+          <button id="incomeLoadMore" class="statement-load-more" type="button" hidden>Carregar mais</button>
         </section>
         <section id="page-despesas" class="page" hidden>
           <span class="eyebrow">Saídas</span><h1>Minhas despesas</h1><p>Organize pagamentos únicos, parcelas e despesas mensais.</p><button class="primary action-button" type="button" data-add="despesas"><i data-lucide="plus" aria-hidden="true"></i>Adicionar despesa</button><ul id="expenseList" class="entry-list"></ul>
