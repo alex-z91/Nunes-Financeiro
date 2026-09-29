@@ -130,11 +130,11 @@ $('monthFilter').value=today().slice(0,7);$('yearFilter').value=today().slice(0,
 const DASHBOARD_MONTHS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 function setDashboardPeriodMode(mode,doRender=true){
   state.dashboardPeriodMode=mode==='year'?'year':'month';
-  for(const button of document.querySelectorAll('[data-period-mode]'))button.setAttribute('aria-pressed',String(button.dataset.periodMode===state.dashboardPeriodMode));
+  $('periodMode').value=state.dashboardPeriodMode;
   $('monthFilter').hidden=state.dashboardPeriodMode!=='month';$('yearFilter').hidden=state.dashboardPeriodMode!=='year';
   if(doRender)render();
 }
-for(const button of document.querySelectorAll('[data-period-mode]'))button.addEventListener('click',()=>setDashboardPeriodMode(button.dataset.periodMode));
+$('periodMode').addEventListener('change',event=>setDashboardPeriodMode(event.currentTarget.value));
 $('monthFilter').addEventListener('change',render);$('yearFilter').addEventListener('change',render);setDashboardPeriodMode('month',false);
 function node(tag,text,className){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el;}
 function action(text,handler,label=text){const button=node('button',text);button.type='button';button.setAttribute('aria-label',label);button.addEventListener('click',handler);return button;}
