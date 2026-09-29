@@ -94,44 +94,99 @@
         <div id="reviewNotice" class="warning" hidden></div>
         <section id="page-inicio" class="page dashboard-page">
           <div class="dashboard-heading">
-            <div class="dashboard-heading-copy"><h1>Visão financeira</h1><p>Resumo do período e o que precisa da sua atenção.</p></div>
-            <div class="period dashboard-period"><label for="monthFilter">Período</label><input id="monthFilter" type="month" required></div>
+            <div class="dashboard-heading-copy">
+              <h1>Visão financeira</h1>
+              <p>Desempenho do período em uma leitura rápida.</p>
+            </div>
+            <div class="dashboard-period" aria-label="Período da análise">
+              <div class="period-mode" role="group" aria-label="Tipo de período">
+                <button type="button" data-period-mode="month" aria-pressed="true">Mensal</button>
+                <button type="button" data-period-mode="year" aria-pressed="false">Anual</button>
+              </div>
+              <div class="period-inputs">
+                <label class="sr-only" for="monthFilter">Mês da análise</label>
+                <input id="monthFilter" type="month" required>
+                <label class="sr-only" for="yearFilter">Ano da análise</label>
+                <input id="yearFilter" type="number" min="1900" max="9999" step="1" inputmode="numeric" hidden>
+              </div>
+            </div>
           </div>
+
           <div class="dashboard-grid">
             <button type="button" class="dashboard-card dashboard-income" data-dashboard-detail="receitas" aria-label="Ver detalhes das receitas do período">
-              <div class="dashboard-card-head"><span>Receita</span><span class="dashboard-card-icon income"><i data-lucide="arrow-down-left" aria-hidden="true"></i></span></div>
+              <div class="dashboard-card-head"><span>Receitas</span><span class="dashboard-card-icon income"><i data-lucide="arrow-down-left" aria-hidden="true"></i></span></div>
               <strong id="incomeTotal" class="dashboard-main-value income">R$ 0,00</strong>
               <div class="dashboard-submetrics">
                 <div><span>Recebido</span><strong id="incomeReceived">R$ 0,00</strong></div>
                 <div><span>A receber</span><strong id="incomeReceivable">R$ 0,00</strong></div>
               </div>
             </button>
+
             <button type="button" class="dashboard-card dashboard-expense" data-dashboard-detail="despesas" aria-label="Ver detalhes das despesas do período">
-              <div class="dashboard-card-head"><span>Despesa</span><span class="dashboard-card-icon expense"><i data-lucide="arrow-up-right" aria-hidden="true"></i></span></div>
+              <div class="dashboard-card-head"><span>Despesas</span><span class="dashboard-card-icon expense"><i data-lucide="arrow-up-right" aria-hidden="true"></i></span></div>
               <strong id="expenseTotal" class="dashboard-main-value expense">R$ 0,00</strong>
               <div class="dashboard-submetrics">
                 <div><span>Pago</span><strong id="expensePaid">R$ 0,00</strong></div>
                 <div><span>A pagar</span><strong id="expensePayable">R$ 0,00</strong></div>
               </div>
             </button>
+
             <button type="button" class="dashboard-card dashboard-flow" data-dashboard-detail="fluxo" aria-label="Ver detalhes do fluxo do período">
-              <div class="dashboard-card-head"><span>Fluxo</span><span class="dashboard-card-icon"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i></span></div>
-              <div class="flow-balance-line"><div><span>Balanço atual</span><strong id="actualBalanceTotal">R$ 0,00</strong></div><div class="flow-forecast"><span>Previsto</span><strong id="balanceTotal">R$ 0,00</strong></div></div>
-              <div class="flow-chart" aria-label="Comparação entre previsto e realizado">
-                <div class="flow-row"><div class="flow-row-label"><span>Receitas</span><span id="incomeProgressLabel">0%</span></div><div class="flow-track"><span id="incomeProgressBar" class="flow-fill income-fill"></span></div></div>
-                <div class="flow-row"><div class="flow-row-label"><span>Despesas</span><span id="expenseProgressLabel">0%</span></div><div class="flow-track"><span id="expenseProgressBar" class="flow-fill expense-fill"></span></div></div>
+              <div class="dashboard-card-head">
+                <span>Fluxo do período</span>
+                <span class="dashboard-card-icon"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i></span>
               </div>
-              <div class="flow-meta"><span>Comprometimento <strong id="commitmentValue">0%</strong></span><span id="monthStatus" class="month-status">Sem dados</span></div>
-              <p id="monthDescription" class="flow-caption"></p><p id="actualSummary" class="sr-only"></p>
+              <div class="flow-balance-line">
+                <div><span>Balanço atual</span><strong id="actualBalanceTotal">R$ 0,00</strong></div>
+                <div class="flow-forecast"><span>Previsão</span><strong id="balanceTotal">R$ 0,00</strong></div>
+              </div>
+              <div class="flow-line-wrap">
+                <div class="flow-legend" aria-hidden="true">
+                  <span><i class="flow-legend-dot income-dot"></i>Recebido</span>
+                  <span><i class="flow-legend-dot expense-dot"></i>Pago</span>
+                </div>
+                <div class="flow-chart-stage">
+                  <svg id="flowLineChart" class="flow-line-chart" viewBox="0 0 600 180" preserveAspectRatio="none" role="img" aria-label="Evolução das receitas recebidas e despesas pagas no período">
+                    <line x1="8" y1="30" x2="592" y2="30" class="flow-grid-line"/>
+                    <line x1="8" y1="90" x2="592" y2="90" class="flow-grid-line"/>
+                    <line x1="8" y1="150" x2="592" y2="150" class="flow-grid-line"/>
+                    <path id="flowIncomeLine" class="flow-line income-line" d=""/>
+                    <path id="flowExpenseLine" class="flow-line expense-line" d=""/>
+                  </svg>
+                  <p id="flowChartEmpty" class="flow-chart-empty" hidden>Sem movimentações confirmadas neste período.</p>
+                </div>
+                <div id="flowAxis" class="flow-axis" aria-hidden="true"></div>
+                <p id="flowChartSummary" class="sr-only"></p>
+              </div>
+              <p id="actualSummary" class="sr-only"></p>
             </button>
-            <section class="dashboard-card dashboard-commitments" aria-labelledby="commitmentsTitle">
-              <div class="dashboard-card-head"><div><span id="commitmentsTitle">Compromissos</span><strong id="commitmentCount" class="commitment-count">0 próximos</strong></div><span class="dashboard-card-icon"><i data-lucide="calendar-clock" aria-hidden="true"></i></span></div>
-              <ul id="commitmentList" class="commitment-list"></ul>
-              <button type="button" class="dashboard-text-action" data-page="despesas">Ver despesas <i data-lucide="arrow-right" aria-hidden="true"></i></button>
+
+            <section class="dashboard-card dashboard-analysis" aria-labelledby="analysisTitle">
+              <div class="dashboard-card-head">
+                <span id="analysisTitle">Análise</span>
+                <span class="dashboard-card-icon"><i data-lucide="activity" aria-hidden="true"></i></span>
+              </div>
+              <div class="analysis-stack">
+                <div class="analysis-block">
+                  <div class="analysis-label"><span>Entrada × saída</span><strong><span id="analysisIncomeShare">0%</span> / <span id="analysisExpenseShare">0%</span></strong></div>
+                  <div class="ratio-track" aria-hidden="true"><span id="analysisIncomeBar" class="ratio-income"></span><span id="analysisExpenseBar" class="ratio-expense"></span></div>
+                </div>
+                <div class="analysis-block">
+                  <div class="analysis-label"><span>Comprometimento</span><strong id="commitmentValue">0%</strong></div>
+                  <div class="commitment-track" aria-hidden="true"><span id="commitmentBar"></span></div>
+                </div>
+                <div class="analysis-block analysis-trend">
+                  <span>Tendência</span>
+                  <div class="trend-value"><span id="trendIcon" aria-hidden="true">→</span><strong id="monthStatus" data-tone="neutral">Sem dados</strong></div>
+                  <p id="monthDescription">Sem movimentação no período.</p>
+                </div>
+              </div>
             </section>
           </div>
+
           <section class="quadrant dashboard-notes"><div class="section-heading-inline"><div><span class="eyebrow">Apoio</span><h2>Anotações</h2></div></div><form id="noteForm"><label for="noteText">Nova anotação</label><div class="note-input"><input id="noteText" name="text" maxlength="1000" required><button class="primary" type="submit">Adicionar</button></div></form><ul id="notesList" class="entry-list"></ul></section>
         </section>
+
         <section id="page-receitas" class="page" hidden>
           <span class="eyebrow">Entradas</span><h1>Minhas receitas</h1><p>Defina quando cada entrada deve acontecer.</p><button class="primary action-button" type="button" data-add="receitas"><i data-lucide="plus" aria-hidden="true"></i>Adicionar receita</button><ul id="incomeList" class="entry-list"></ul>
         </section>
