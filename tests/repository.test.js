@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {applyOperation,makeEntry,normalize} from '../js/finance.js';
+const source=readFileSync(new URL('../js/repository.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replaceAll('export ','');
+const entry=(id)=>makeEntry({id,name:id,value:'100',date:'2026-09-10',mode:'single',count:1});
+function repository(runTransaction){
+ const scope={initializeApp:()=>({}),firebaseConfig:{},getAuth:()=>({currentUser:{uid:'u'}}),getFirestore:()=>({}),setPersistence:async()=>{},browserSessionPersistence:{kind:'session'},browserLocalPersistence:{kind:'local'},doc:(_db,...path)=>path.join('/'),runTransaction,applyOperation,normalize,navigator:{onLine:true},onAuthStateChanged:()=>{},signInWithEmailAndPassword:()=>{},createUserWithEmailAndPassword:()=>{},sendPasswordResetEmail:()=>{},signOut:()=>{},setDoc:()=>{},getDoc:()=>{},onSnapshot:()=>{}};
+ return new Function(...Object.keys(scope),source+'\nreturn {mutate,configurePersistence,login};')(...Object.values(scope));
+}
+test('repositório propaga falha de gravação ao formulário',async()=>{const api=repository(async()=>{throw Object.assign(new Error('Permissão'),{code:'permission-denied'});});await assert.rejects(api.mutate('u',{type:'clear',expectedRevision:0}),{code:'permission-denied'});});
+test('retry da transação reaplica intenção no estado mais recente',async()=>{let saved;const api=repository(async(_db,callback)=>{let latest={};const transaction={get:async()=>({exists:()=>true,data:()=>latest}),set:(ref,data)=>{assert.equal(ref,'financeiro/u');saved=data;}};await callback(transaction);latest=applyOperation({}, {type:'add',collection:'receitas',id:'outro',entry:entry('outro')});await callback(transaction);});await api.mutate('u',{type:'add',collection:'receitas',id:'novo',entry:entry('novo')});assert.deepEqual(saved.receitas.map(r=>r.id),['outro','novo']);});
+test('sessão diferente não envia alteração ao banco',async()=>{let called=false;const api=repository(async()=>{called=true;});await assert.rejects(api.mutate('outra-conta',{}),/sessão terminou/);assert.equal(called,false);});
+
+test('persistência do login pode ser escolhida sem mudar a persistência padrão do produto',async()=>{const choices=[];const sourceLocal=source+'\nreturn {configurePersistence};';const scope={initializeApp:()=>({}),firebaseConfig:{},getAuth:()=>({currentUser:{uid:'u'}}),getFirestore:()=>({}),setPersistence:async(_auth,value)=>choices.push(value.kind),browserSessionPersistence:{kind:'session'},browserLocalPersistence:{kind:'local'},doc:()=>{},runTransaction:()=>{},applyOperation,normalize,navigator:{onLine:true},onAuthStateChanged:()=>{},signInWithEmailAndPassword:()=>{},createUserWithEmailAndPassword:()=>{},sendPasswordResetEmail:()=>{},signOut:()=>{},setDoc:()=>{},getDoc:()=>{},onSnapshot:()=>{}};const api=new Function(...Object.keys(scope),sourceLocal)(...Object.values(scope));await api.configurePersistence(false);await api.configurePersistence(true);assert.deepEqual(choices,['session','local']);});

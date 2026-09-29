@@ -1,0 +1,39 @@
+let playwright;
+try { playwright=require('playwright'); } catch { playwright=require(require.resolve('playwright',{paths:[process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES || process.cwd()]})); }
+const {chromium}=playwright;
+const fs=require('node:fs');const assert=require('node:assert/strict');
+(async()=>{
+ const browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:390,height:844}});const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ await page.route('**/*',async route=>{const url=new URL(route.request().url());if(url.pathname==='/js/repository.js')return route.fulfill({contentType:'text/javascript',body:fs.readFileSync('tests/mock-repository.js','utf8')});if(url.hostname==='127.0.0.1')return route.continue();return route.abort();});
+ await page.goto('http://127.0.0.1:8000');await page.waitForFunction(()=>document.getElementById('connectionStatus').textContent.startsWith('Dados carregados'));
+ assert.equal(await page.locator('#desktopSidebar').isVisible(),false);assert.equal(await page.locator('#userName').innerText(),'Alex');assert.equal(await page.locator('#notesList img').count(),0);assert.equal(await page.evaluate(()=>window.injected),undefined);
+ // O alerta precisa levar ao lançamento exato que requer revisão.
+ const salaryAlert=page.locator('#reviewNotice .warning-item').filter({hasText:'Salário antigo'});assert.equal(await salaryAlert.count(),1);await salaryAlert.click();assert.equal(await page.locator('#page-receitas').isVisible(),true);assert.equal(await page.locator('#incomeList [data-entry-id]').first().getAttribute('class').then(value=>value?.includes('issue-highlight')),true);
+ // Swipe para a próxima página no mobile.
+ await page.locator('.bottom-nav [data-page=inicio]').click();await page.evaluate(()=>{const main=document.getElementById('main');const start=new Event('touchstart',{bubbles:true});Object.defineProperty(start,'touches',{value:[{clientX:330,clientY:320}]});main.dispatchEvent(start);const end=new Event('touchend',{bubbles:true});Object.defineProperty(end,'changedTouches',{value:[{clientX:80,clientY:325}]});main.dispatchEvent(end);});assert.equal(await page.locator('#page-receitas').isVisible(),true);
+ await page.locator('[data-add=receitas]').first().click();
+ await page.locator('#entryName').fill('<img src=x onerror=alert(1)> Serviço');await page.locator('#entryValue').fill('1000');await page.locator('#entryDate').fill('2026-09-10');
+ await page.evaluate(()=>window.testBackend.fail=true);await page.locator('#entryForm [type=submit]').click();await page.waitForFunction(()=>document.getElementById('entryError').textContent.includes('Falha simulada'));assert.equal(await page.locator('#entryDialog').isVisible(),true);assert.equal(await page.locator('#entryValue').inputValue(),'1000');
+ await page.evaluate(()=>window.testBackend.fail=false);await page.locator('#entryForm [type=submit]').click();await page.waitForFunction(()=>!document.getElementById('entryDialog').open);assert.equal(await page.locator('#incomeList img').count(),0);
+ await page.locator('.bottom-nav [data-page=despesas]').click();await page.locator('[data-add=despesas]').first().click();await page.locator('#entryName').fill('Notebook');await page.locator('#entryMode').selectOption('installments');await page.locator('#entryValue').fill('100');await page.locator('#entryCount').fill('3');await page.locator('#entryDate').fill('2026-11-30');await page.locator('#entryForm [type=submit]').click();await page.waitForFunction(()=>!document.getElementById('entryDialog').open);
+ assert.deepEqual(await page.evaluate(()=>window.testBackend.data.despesas.find(e=>e.name==='Notebook').occurrences.map(p=>[p.date,p.cents])),[['2026-11-30',3334],['2026-12-30',3333],['2027-01-30',3333]]);
+ await page.getByRole('button',{name:'Editar Compra antiga',exact:true}).click();assert.equal(await page.locator('#legacyDates').isVisible(),true);await page.locator('#legacy-date-0').fill('2026-11-15');await page.locator('#legacy-date-1').fill('2026-12-15');await page.locator('#entryForm [type=submit]').click();await page.waitForFunction(()=>!document.getElementById('entryDialog').open);assert.equal(await page.evaluate(()=>window.testBackend.data.despesas[0].occurrences.some(p=>p.estimated)),false);
+ await page.locator('.bottom-nav [data-page=inicio]').click();await page.locator('#monthFilter').fill('2026-09');await page.locator('#monthFilter').dispatchEvent('change');assert.match(await page.locator('#incomeTotal').innerText(),/1.000,00/);
+ await page.getByRole('button',{name:'Registrar recebimento',exact:true}).click();await page.locator('#settleValue').fill('400');await page.locator('#settleDate').fill('2026-09-10');await page.locator('#settleForm [type=submit]').click();await page.waitForFunction(()=>!document.getElementById('settleDialog').open);assert.match(await page.locator('#incomeReceived').innerText(),/400,00/);assert.match(await page.locator('#incomeReceivable').innerText(),/600,00/);
+ // Navegação e overflow em mobile, tablet e desktop.
+ for(const width of [320,375,390,768,1440]){
+  await page.setViewportSize({width,height:900});
+  const selector=width>=900?'.sidebar-nav [data-page]':'.bottom-nav [data-page]';
+  for(const name of ['inicio','receitas','despesas','economia']){await page.locator(`${selector}[data-page=${name}]`).click();const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);assert.equal(overflow,false,`overflow ${width} ${name}`);}
+  if(width>=900){await page.locator('#settingsToggle').click();await page.locator('#settingsMenu [data-page=configuracoes]').click();assert.equal(await page.locator('#page-configuracoes').isVisible(),true);}
+  else await page.locator('.bottom-nav [data-page=configuracoes]').click();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`overflow ${width} configuracoes`);
+ }
+ // Banco Economia preserva a nova arquitetura e salva por operação.
+ await page.setViewportSize({width:390,height:844});await page.locator('.bottom-nav [data-page=economia]').click();await page.locator('#economyName').fill('Reserva teste');await page.locator('#economyValue').fill('250');await page.locator('#economyDate').fill('2026-09-20');await page.locator('#economyForm [type=submit]').click();await page.waitForFunction(()=>document.getElementById('economyBalance').textContent.includes('250,00'));
+ // Sidebar integrada pode recolher no desktop sem esconder o conteúdo.
+ await page.setViewportSize({width:1440,height:900});const before=await page.locator('.app-shell').getAttribute('class');await page.locator('#sidebarCollapse').click();const after=await page.locator('.app-shell').getAttribute('class');assert.notEqual(before,after);assert.equal(await page.locator('#main').isVisible(),true);
+ await page.setViewportSize({width:390,height:844});await page.locator('.bottom-nav [data-page=inicio]').click();await page.screenshot({path:'../mobile-check.png',fullPage:true});
+ await page.locator('.bottom-nav [data-page=configuracoes]').click();await page.locator('#clearButton').click();await page.locator('#clearConfirmation').fill('APAGAR');await page.evaluate(()=>window.testBackend.fail=true);await page.locator('#clearForm [type=submit]').click();await page.waitForFunction(()=>document.getElementById('clearError').textContent.includes('Falha'));assert.ok(await page.evaluate(()=>window.testBackend.data.receitas.length>0));assert.equal(await page.locator('#clearDialog').isVisible(),true);await page.locator('#cancelClear').click();
+ assert.deepEqual(errors,[]);console.log('PASS: alerta direcionável, swipe, sidebar, XSS, parcelas, legado, pagamento parcial, economia, falhas e overflow.');await browser.close();
+})().catch(error=>{console.error(error);process.exit(1);});
