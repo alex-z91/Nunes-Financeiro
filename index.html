@@ -99,11 +99,10 @@
               <p>Desempenho do período em uma leitura rápida.</p>
             </div>
             <div class="dashboard-period" aria-label="Período da análise">
-              <label class="sr-only" for="periodMode">Tipo de período</label>
-              <select id="periodMode" class="period-mode-select" aria-label="Tipo de período">
-                <option value="month">Mensal</option>
-                <option value="year">Anual</option>
-              </select>
+              <div class="period-mode" role="group" aria-label="Tipo de período">
+                <button type="button" data-period-mode="month" aria-pressed="true">Mensal</button>
+                <button type="button" data-period-mode="year" aria-pressed="false">Anual</button>
+              </div>
               <div class="period-inputs">
                 <label class="sr-only" for="monthFilter">Mês da análise</label>
                 <input id="monthFilter" type="month" required>
