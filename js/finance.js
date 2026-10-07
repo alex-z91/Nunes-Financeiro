@@ -61,6 +61,14 @@ export function customSchedule(amount, months) {
   if (!unique.length || unique.length > 360) throw new Error('Selecione entre 1 e 360 competências.');
   return unique.map((month,i)=>({id:`p${i+1}`,date:monthDate(month),cents:amount,payments:[],estimated:false}));
 }
+function recurringOccurrence(entry, month) {
+  if (!entry?.openEnded || entry.mode!=='monthly' || entry.category!=='Fixa' || !validDate(entry.firstDate) || !/^\d{4}-\d{2}$/.test(month||'')) return null;
+  const [fy,fm]=entry.firstDate.slice(0,7).split('-').map(Number),[y,m]=month.split('-').map(Number),offset=(y-fy)*12+(m-fm);
+  if (offset<0) return null;
+  const date=addMonths(entry.firstDate,offset);
+  if (date.slice(0,7)!==month) return null;
+  return {id:`m-${month}`,date,cents:entry.amountCents,payments:[],estimated:false};
+}
 export function makeEntry({id, name, value, date, count, mode, category='Fixa', revision=0, months=[]}) {
   const trimmed = name.trim();
   if (!trimmed || trimmed.length > 160) throw new Error('Informe um nome com até 160 caracteres.');
@@ -70,9 +78,13 @@ export function makeEntry({id, name, value, date, count, mode, category='Fixa', 
     const occurrences = customSchedule(amount,months);
     return {id,name:trimmed,mode,category,amountCents:amount,firstDate:occurrences[0].date,count:occurrences.length,revision,pendingReview:false,occurrences};
   }
+  if (mode==='monthly' && category==='Fixa') {
+    if (!validDate(date)) throw new Error('Informe uma data válida.');
+    return {id,name:trimmed,mode,category,amountCents:amount,firstDate:date,count:null,openEnded:true,revision,pendingReview:false,occurrences:[]};
+  }
   const periods = mode === 'single' ? 1 : Number(count);
   return {id, name:trimmed, mode, category, amountCents:amount, firstDate:date,
-    count:periods, revision, pendingReview:false, occurrences:schedule(amount,periods,date,mode==='monthly')};
+    count:periods, openEnded:false, revision, pendingReview:false, occurrences:schedule(amount,periods,date,mode==='monthly')};
 }
 function modernEntry(entry,index,prefix) {
   return {
@@ -176,11 +188,16 @@ export function normalize(raw = {}) {
 export function occurrencesFor(data, month) {
   const result=[];
   for (const collection of ['receitas','despesas']) for (const entry of data[collection] || []) {
-    for (const occurrence of entry.occurrences || []) if (!month || occurrence.date.slice(0,7)===month) {
+    const persisted=(entry.occurrences||[]).filter(occurrence=>!month||occurrence.date.slice(0,7)===month);
+    const rows=[...persisted];
+    if(month && entry.openEnded && !persisted.some(occurrence=>occurrence.date.slice(0,7)===month)){
+      const virtual=recurringOccurrence(entry,month);if(virtual)rows.push(virtual);
+    }
+    for (const occurrence of rows) {
       const paid=paymentTotal(occurrence), outstanding=Math.max(0,occurrence.cents-paid), settled=outstanding===0&&occurrence.cents>0;
-      const payments=(occurrence.payments||[]).map(p=>({...p}));
+      const payments=(occurrence.payments||[]).map(p=>({...p})),persistedIndex=(entry.occurrences||[]).findIndex(item=>item.id===occurrence.id);
       result.push({...occurrence,payments,paymentCents:paid,outstandingCents:outstanding,settled,partial:paid>0&&!settled,settledDate:settled?payments.filter(p=>!p.estimated).sort((a,b)=>a.date.localeCompare(b.date)).at(-1)?.date||null:null,
-        entryId:entry.id,name:entry.name,category:entry.category,collection,revision:entry.revision,index:entry.occurrences.indexOf(occurrence)+1,count:entry.occurrences.length});
+        entryId:entry.id,name:entry.name,category:entry.category,collection,revision:entry.revision,index:persistedIndex>=0?persistedIndex+1:null,count:entry.openEnded?null:entry.occurrences.length});
     }
   }
   return result.sort((a,b)=>a.date.localeCompare(b.date));
@@ -216,7 +233,11 @@ export function applyOperation(raw, op) {
     else if (op.type==='edit') list[index]={...structuredClone(op.entry),id:current.id,revision:(current.revision||0)+1};
     else if (['payment','removePayment','settle'].includes(op.type)) {
       if (!['receitas','despesas'].includes(op.collection)) throw new Error('Operação inválida.');
-      const occurrence=current.occurrences.find(p=>p.id===op.occurrenceId);
+      let occurrence=current.occurrences.find(p=>p.id===op.occurrenceId);
+      if (!occurrence && current.openEnded && /^m-\d{4}-\d{2}$/.test(op.occurrenceId||'')) {
+        occurrence=recurringOccurrence(current,op.occurrenceId.slice(2));
+        if(occurrence){current.occurrences.push(occurrence);current.occurrences.sort((a,b)=>a.date.localeCompare(b.date));}
+      }
       if (!occurrence) throw new Error('Parcela não encontrada.');
       occurrence.payments=occurrence.payments||[];
       if (op.type==='payment') {

@@ -159,7 +159,12 @@ function incomeStatus(row){
 }
 function incomeStatementRows(){
   const scope=document.querySelector('[data-income-scope][aria-pressed="true"]')?.dataset.incomeScope||'month',month=$('incomeMonthFilter').value,status=$('incomeStatusFilter').value,query=normalizedSearch($('incomeSearch').value);
-  return occurrencesFor(state.data).filter(row=>{
+  const base=scope==='month'?occurrencesFor(state.data,month):occurrencesFor(state.data);
+  if(scope==='all'){
+    const current=occurrencesFor(state.data,today().slice(0,7));const seen=new Set(base.map(row=>`${row.collection}:${row.entryId}:${row.id}`));
+    for(const row of current){const key=`${row.collection}:${row.entryId}:${row.id}`;if(!seen.has(key)){base.push(row);seen.add(key);}}
+  }
+  return base.filter(row=>{
     if(row.collection!=='receitas')return false;if(scope==='month'&&row.date.slice(0,7)!==month)return false;
     if(query&&!normalizedSearch(row.name).includes(query))return false;
     const rowStatus=incomeStatus(row).key;if(status!=='all'&&rowStatus!==status)return false;return true;
@@ -201,7 +206,7 @@ function dashboardPeriod(){
 }
 function dashboardSummary(period){
   if(period.mode==='month')return summarize(state.data,period.value);
-  const rows=occurrencesFor(state.data).filter(row=>row.date.startsWith(period.prefix));
+  const rows=Array.from({length:12},(_,index)=>occurrencesFor(state.data,`${period.value}-${String(index+1).padStart(2,'0')}`)).flat();
   const incomeRows=rows.filter(row=>row.collection==='receitas'),expenseRows=rows.filter(row=>row.collection==='despesas');
   const sum=(items,key='cents')=>items.reduce((total,row)=>total+(row[key]||0),0),income=sum(incomeRows),expenses=sum(expenseRows),actualIncome=sum(incomeRows,'paymentCents'),actualExpenses=sum(expenseRows,'paymentCents');
   return {income,expenses,balance:income-expenses,actualIncome,actualExpenses,actualBalance:actualIncome-actualExpenses,commitment:income?expenses/income*100:expenses?null:0,rows};
@@ -298,7 +303,7 @@ function render(){
 }
 function renderEntry(entry,collection){
   const li=node('li'),head=node('div',undefined,'entry-heading');li.dataset.entryId=entry.id;li.tabIndex=-1;if(entry.pendingReview||(entry.mode==='legacy'&&entry.occurrences.some(p=>p.estimated)))li.classList.add('has-issue');head.append(node('strong',entry.name),node('span',money(entry.amountCents),`amount ${collection==='receitas'?'income':'expense'}`));li.append(head);
-  const occurrences=entry.occurrences;const modeLabel=entry.mode==='monthly'?'mensalidade(s) — valor por mês':entry.mode==='custom'?'competência(s) escolhida(s) — valor por competência':'parcela(s) — valor total';li.append(node('p',entry.pendingReview?'Revisão pendente: defina as datas para incluir nos totais.':`${occurrences.length} ${modeLabel} · ${displayDate(occurrences[0]?.date)} a ${displayDate(occurrences.at(-1)?.date)}`));
+  const occurrences=entry.occurrences;const modeLabel=entry.mode==='monthly'?'mensalidade(s) — valor por mês':entry.mode==='custom'?'competência(s) escolhida(s) — valor por competência':'parcela(s) — valor total';li.append(node('p',entry.pendingReview?'Revisão pendente: defina as datas para incluir nos totais.':entry.openEnded?`Mensal fixa · desde ${displayDate(entry.firstDate)} · sem data final`:`${occurrences.length} ${modeLabel} · ${displayDate(occurrences[0]?.date)} a ${displayDate(occurrences.at(-1)?.date)}`));
   if(entry.mode==='legacy'&&occurrences.some(p=>p.estimated))li.append(node('p','Dias de vencimento a confirmar; meses originais preservados.'));else if(occurrences.some(p=>p.estimated))li.append(node('p','Competências mensais preservadas do sistema anterior.'));
   const actions=node('div',undefined,'row-actions');actions.append(action('Editar',()=>openEntry(collection,entry),`Editar ${entry.name}`),action('Excluir',()=>remove(collection,entry),`Excluir ${entry.name}`));li.append(actions);return li;
 }
@@ -339,15 +344,15 @@ function openEntry(collection,entry=null){
   $('legacyDatesList').replaceChildren();
   if(legacy)entry.occurrences.forEach((p,i)=>{const label=node('label',`Vencimento ${i+1}`);label.htmlFor=`legacy-date-${i}`;const input=node('input');input.id=label.htmlFor;input.type='date';input.value=p.date;input.required=true;input.min='1900-01-01';input.max='9999-12-31';$('legacyDatesList').append(label,input);});
   const settled=entry?.occurrences.some(p=>(p.payments||[]).length);
-  $('entryHelp').textContent=settled?'Este lançamento já tem pagamentos ou recebimentos registrados. Você pode ajustar descrição e tipo; valores e competências ficam preservados.':entry?.pendingReview?'O registro antigo foi preservado. Informe a modalidade e as competências corretas.':'Mensal repete o valor por mês. Parcelada divide o valor total. Personalizada aplica o valor informado em cada mês escolhido.';
+  $('entryHelp').textContent=settled?'Este lançamento já tem pagamentos ou recebimentos registrados. Você pode ajustar descrição e tipo; valores e competências ficam preservados.':entry?.pendingReview?'O registro antigo foi preservado. Informe a modalidade e as competências corretas.':'Mensal fixa se repete sem data final. Mensal variável usa a quantidade de meses. Parcelada divide o valor total.';
   updateEntryFields();$('entryDialog').showModal();$('entryName').focus();
 }
 function updateEntryFields(){
-  const mode=$('entryMode').value,settled=state.editing?.entry?.occurrences.some(p=>(p.payments||[]).length),legacy=mode==='legacy',custom=mode==='custom';
+  const mode=$('entryMode').value,settled=state.editing?.entry?.occurrences.some(p=>(p.payments||[]).length),legacy=mode==='legacy',custom=mode==='custom',collection=state.editing?.collection,category=collection==='receitas'?'Fixa':$('entryCategory').value,fixedMonthly=mode==='monthly'&&category==='Fixa';
   $('valueLabel').textContent=(mode==='monthly'||custom)?'Valor por competência (R$)':mode==='single'?'Valor (R$)':'Valor total (R$)';$('dateLabel').textContent=mode==='single'?'Data prevista':'Primeiro vencimento';
-  $('countField').hidden=mode==='single'||legacy||custom;$('legacyDates').hidden=!legacy;$('customDates').hidden=!custom;$('entryDate').parentElement.hidden=legacy||custom;
+  $('countField').hidden=mode==='single'||legacy||custom||fixedMonthly;$('legacyDates').hidden=!legacy;$('customDates').hidden=!custom;$('entryDate').parentElement.hidden=legacy||custom;
   for(const id of ['entryMode','entryValue','entryDate','entryCount','customMonthInput','addCustomMonth'])$(id).disabled=!!settled||(legacy&&['entryDate','entryCount'].includes(id));
-  $('entryCount').required=!['single','legacy','custom'].includes(mode);$('entryDate').required=!legacy&&!custom;
+  $('entryCount').required=mode==='installments'||(mode==='monthly'&&!fixedMonthly);$('entryDate').required=!legacy&&!custom;
   $('legacyDatesList').querySelectorAll('input').forEach(input=>input.disabled=!!settled||!legacy);$('customMonthList').querySelectorAll('button').forEach(button=>button.disabled=!!settled);
   previewSchedule();
 }
@@ -361,12 +366,13 @@ function draftEntry(){
     const occurrences=entry.occurrences.map((p,i)=>({...p,date:dates[i],estimated:false,cents:Math.floor(amount/dates.length)+(i<amount%dates.length?1:0)})).sort((a,b)=>a.date.localeCompare(b.date));
     return {...structuredClone(entry),name:$('entryName').value.trim(),category:$('entryCategory').value,amountCents:amount,firstDate:occurrences[0].date,occurrences,pendingReview:false};
   }
-  const result=makeEntry({id,name:$('entryName').value,value:$('entryValue').value,date:$('entryDate').value,count:$('entryCount').value,mode:$('entryMode').value,months:state.customMonths,category:$('entryCategory').value,revision:entry?.revision||0});
+  const category=state.editing.collection==='receitas'?'Fixa':$('entryCategory').value;
+  const result=makeEntry({id,name:$('entryName').value,value:$('entryValue').value,date:$('entryDate').value,count:$('entryCount').value,mode:$('entryMode').value,months:state.customMonths,category,revision:entry?.revision||0});
   if(entry?.legacy)result.legacy=structuredClone(entry.legacy);
   return result;
 }
-function previewSchedule(){try{const entry=draftEntry(),rows=entry.occurrences;const total=rows.reduce((s,p)=>s+p.cents,0);$('schedulePreview').textContent=`${rows.length} vencimento(s): ${displayDate(rows[0].date)} a ${displayDate(rows.at(-1).date)}. Total do período: ${money(total)}.`;}catch{$('schedulePreview').textContent='Preencha os dados para conferir os vencimentos.';}}
-$('entryForm').addEventListener('input',()=>{state.dirty=true;previewSchedule();});$('entryMode').addEventListener('change',updateEntryFields);
+function previewSchedule(){try{const entry=draftEntry();if(entry.openEnded){$('schedulePreview').textContent=`Recorrência mensal fixa a partir de ${displayDate(entry.firstDate)}, sem data final. Valor mensal: ${money(entry.amountCents)}.`;return;}const rows=entry.occurrences,total=rows.reduce((s,p)=>s+p.cents,0);$('schedulePreview').textContent=`${rows.length} vencimento(s): ${displayDate(rows[0].date)} a ${displayDate(rows.at(-1).date)}. Total do período: ${money(total)}.`;}catch{$('schedulePreview').textContent='Preencha os dados para conferir os vencimentos.';}}
+$('entryForm').addEventListener('input',()=>{state.dirty=true;previewSchedule();});$('entryMode').addEventListener('change',updateEntryFields);$('entryCategory').addEventListener('change',()=>{state.dirty=true;updateEntryFields();});
 function closeEntry(){if($('entryForm').dataset.busy)return;if(state.dirty&&!confirm('Descartar as alterações não salvas?'))return;$('entryDialog').close();state.editing=null;state.dirty=false;}
 $('entryDialog').addEventListener('cancel',e=>{e.preventDefault();closeEntry();});$('closeEntry').addEventListener('click',closeEntry);$('cancelEntry').addEventListener('click',closeEntry);
 $('entryForm').addEventListener('submit',e=>{
