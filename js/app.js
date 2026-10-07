@@ -371,7 +371,7 @@ $('addCustomRange').addEventListener('click',()=>{
 function openEntry(collection,entry=null){
   if(!state.ready){notify('Aguarde os dados carregarem.',true);return;}
   state.editing={collection,entry:entry?structuredClone(entry):null,id:entry?.id||crypto.randomUUID()};state.dirty=false;state.customMonths=entry?.mode==='custom'?(entry.occurrences||[]).map(p=>p.date.slice(0,7)):[];
-  $('entryForm').reset();renderCustomMonths();$('entryError').textContent='';$('entryTitle').textContent=`${entry?'Editar':'Adicionar'} ${collection==='receitas'?'receita':'despesa'}`;
+  $('entryForm').reset();$('customRangeStart').removeAttribute('max');$('customRangeEnd').removeAttribute('min');$('customRangeHint').textContent='Selecione o início e o fim.';renderCustomMonths();$('entryError').textContent='';$('entryTitle').textContent=`${entry?'Editar':'Adicionar'} ${collection==='receitas'?'receita':'despesa'}`;
   $('entryName').value=entry?.name||'';$('entryValue').value=entry ? (entry.amountCents/100).toFixed(2) : '';
   const legacy=entry?.mode==='legacy'&&!entry.pendingReview;
   $('entryMode').querySelector('[value=legacy]').hidden=!legacy;
