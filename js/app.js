@@ -52,8 +52,17 @@ function renderProfile() {
   $('profileName').value=profile.nome || '';$('profileSurname').value=profile.sobrenome || '';$('profileNickname').value=profile.apelido || profile.nome || '';
   $('photoPreview').hidden=!photo;if(photo) $('photoPreview').src=photo;else $('photoPreview').removeAttribute('src');
 }
-function applyAppearance(){document.body.classList.toggle('dark',$('themeSelect').value==='escuro');document.body.style.fontFamily=$('fontSelect').value;}
+function applyAppearance(){
+  const dark=$('themeSelect').value==='escuro';document.body.classList.toggle('dark',dark);document.body.style.fontFamily=$('fontSelect').value;
+  $('themeToggle').setAttribute('aria-pressed',String(dark));$('themeToggle').setAttribute('aria-label',dark?'Ativar tema claro':'Ativar tema escuro');$('themeToggle').title=dark?'Tema claro':'Tema escuro';
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',dark?'#0f100f':'#f7f7f5');
+}
 const savedTheme=stored('temaSolon','claro'),savedFont=stored('fonteSolon','Urbanist, sans-serif');$('themeSelect').value=['claro','escuro'].includes(savedTheme)?savedTheme:'claro';$('fontSelect').value=[...$('fontSelect').options].some(option=>option.value===savedFont)?savedFont:'Urbanist, sans-serif';applyAppearance();
+$('themeSelect').addEventListener('change',()=>{remember('temaSolon',$('themeSelect').value);applyAppearance();});
+$('themeToggle').addEventListener('click',async()=>{
+  const next=$('themeSelect').value==='escuro'?'claro':'escuro';$('themeSelect').value=next;remember('temaSolon',next);applyAppearance();state.profile={...state.profile,temaPadrao:next};
+  if(state.uid&&repository){try{await repository.saveProfile(state.uid,{temaPadrao:next});}catch(error){notify('Tema aplicado neste dispositivo, mas não foi possível sincronizar a preferência.',true);}}
+});
 $('profileForm').addEventListener('submit',async e=>{
   e.preventDefault();const form=e.currentTarget;if(form.dataset.busy)return;const session=state.session,uid=state.uid;
   const nome=$('profileName').value.trim(),sobrenome=$('profileSurname').value.trim(),apelido=$('profileNickname').value.trim()||nome,file=$('profilePhoto').files[0];
