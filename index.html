@@ -98,44 +98,44 @@
               <h1>Visão financeira</h1>
               <p>Desempenho do período em uma leitura rápida.</p>
             </div>
-            <div class="dashboard-heading-tools">
-              <div class="dashboard-quick-actions" aria-label="Ações rápidas">
-                <button type="button" class="quick-add income" data-add="receitas"><i data-lucide="plus" aria-hidden="true"></i><span>Nova receita</span></button>
-                <button type="button" class="quick-add expense" data-add="despesas"><i data-lucide="plus" aria-hidden="true"></i><span>Nova despesa</span></button>
+            <div class="dashboard-period" aria-label="Período da análise">
+              <div class="period-mode" role="group" aria-label="Tipo de período">
+                <button type="button" data-period-mode="month" aria-pressed="true">Mensal</button>
+                <button type="button" data-period-mode="year" aria-pressed="false">Anual</button>
               </div>
-              <div class="dashboard-period" aria-label="Período da análise">
-                <div class="period-mode" role="group" aria-label="Tipo de período">
-                  <button type="button" data-period-mode="month" aria-pressed="true">Mensal</button>
-                  <button type="button" data-period-mode="year" aria-pressed="false">Anual</button>
-                </div>
-                <div class="period-inputs">
-                  <label class="sr-only" for="monthFilter">Mês da análise</label>
-                  <input id="monthFilter" type="month" required>
-                  <label class="sr-only" for="yearFilter">Ano da análise</label>
-                  <input id="yearFilter" type="number" min="1900" max="9999" step="1" inputmode="numeric" hidden>
-                </div>
+              <div class="period-inputs">
+                <label class="sr-only" for="monthFilter">Mês da análise</label>
+                <input id="monthFilter" type="month" required>
+                <label class="sr-only" for="yearFilter">Ano da análise</label>
+                <input id="yearFilter" type="number" min="1900" max="9999" step="1" inputmode="numeric" hidden>
               </div>
             </div>
           </div>
 
           <div class="dashboard-grid">
-            <button type="button" class="dashboard-card dashboard-income" data-dashboard-detail="receitas" aria-label="Ver detalhes das receitas do período">
-              <div class="dashboard-card-head"><span>Receitas</span><span class="dashboard-card-icon income"><i data-lucide="arrow-down-left" aria-hidden="true"></i></span></div>
-              <strong id="incomeTotal" class="dashboard-main-value income">R$ 0,00</strong>
-              <div class="dashboard-submetrics">
-                <div><span>Previsão</span><strong id="incomeForecast">R$ 0,00</strong></div>
-                <div><span>A receber</span><strong id="incomeReceivable">R$ 0,00</strong></div>
-              </div>
-            </button>
+            <article class="dashboard-card dashboard-income dashboard-action-card">
+              <button type="button" class="dashboard-card-main" data-dashboard-detail="receitas" aria-label="Ver detalhes das receitas do período">
+                <div class="dashboard-card-head"><span>Receitas</span></div>
+                <strong id="incomeTotal" class="dashboard-main-value income">R$ 0,00</strong>
+                <div class="dashboard-submetrics">
+                  <div><span>Previsão</span><strong id="incomeForecast">R$ 0,00</strong></div>
+                  <div><span>A receber</span><strong id="incomeReceivable">R$ 0,00</strong></div>
+                </div>
+              </button>
+              <button type="button" class="dashboard-card-icon income dashboard-card-add" data-add="receitas" aria-label="Nova receita"><i data-lucide="plus" aria-hidden="true"></i></button>
+            </article>
 
-            <button type="button" class="dashboard-card dashboard-expense" data-dashboard-detail="despesas" aria-label="Ver detalhes das despesas do período">
-              <div class="dashboard-card-head"><span>Despesas</span><span class="dashboard-card-icon expense"><i data-lucide="arrow-up-right" aria-hidden="true"></i></span></div>
-              <strong id="expenseTotal" class="dashboard-main-value expense">R$ 0,00</strong>
-              <div class="dashboard-submetrics">
-                <div><span>Pago</span><strong id="expensePaid">R$ 0,00</strong></div>
-                <div><span>A pagar</span><strong id="expensePayable">R$ 0,00</strong></div>
-              </div>
-            </button>
+            <article class="dashboard-card dashboard-expense dashboard-action-card">
+              <button type="button" class="dashboard-card-main" data-dashboard-detail="despesas" aria-label="Ver detalhes das despesas do período">
+                <div class="dashboard-card-head"><span>Despesas</span></div>
+                <strong id="expenseTotal" class="dashboard-main-value expense">R$ 0,00</strong>
+                <div class="dashboard-submetrics">
+                  <div><span>Pago</span><strong id="expensePaid">R$ 0,00</strong></div>
+                  <div><span>A pagar</span><strong id="expensePayable">R$ 0,00</strong></div>
+                </div>
+              </button>
+              <button type="button" class="dashboard-card-icon expense dashboard-card-add" data-add="despesas" aria-label="Nova despesa"><i data-lucide="plus" aria-hidden="true"></i></button>
+            </article>
 
             <button type="button" class="dashboard-card dashboard-flow" data-dashboard-detail="fluxo" aria-label="Ver detalhes do fluxo do período">
               <div class="dashboard-card-head">
