@@ -98,16 +98,22 @@
               <h1>Visão financeira</h1>
               <p>Desempenho do período em uma leitura rápida.</p>
             </div>
-            <div class="dashboard-period" aria-label="Período da análise">
-              <div class="period-mode" role="group" aria-label="Tipo de período">
-                <button type="button" data-period-mode="month" aria-pressed="true">Mensal</button>
-                <button type="button" data-period-mode="year" aria-pressed="false">Anual</button>
+            <div class="dashboard-heading-tools">
+              <div class="dashboard-quick-actions" aria-label="Ações rápidas">
+                <button type="button" class="quick-add income" data-add="receitas"><i data-lucide="plus" aria-hidden="true"></i><span>Nova receita</span></button>
+                <button type="button" class="quick-add expense" data-add="despesas"><i data-lucide="plus" aria-hidden="true"></i><span>Nova despesa</span></button>
               </div>
-              <div class="period-inputs">
-                <label class="sr-only" for="monthFilter">Mês da análise</label>
-                <input id="monthFilter" type="month" required>
-                <label class="sr-only" for="yearFilter">Ano da análise</label>
-                <input id="yearFilter" type="number" min="1900" max="9999" step="1" inputmode="numeric" hidden>
+              <div class="dashboard-period" aria-label="Período da análise">
+                <div class="period-mode" role="group" aria-label="Tipo de período">
+                  <button type="button" data-period-mode="month" aria-pressed="true">Mensal</button>
+                  <button type="button" data-period-mode="year" aria-pressed="false">Anual</button>
+                </div>
+                <div class="period-inputs">
+                  <label class="sr-only" for="monthFilter">Mês da análise</label>
+                  <input id="monthFilter" type="month" required>
+                  <label class="sr-only" for="yearFilter">Ano da análise</label>
+                  <input id="yearFilter" type="number" min="1900" max="9999" step="1" inputmode="numeric" hidden>
+                </div>
               </div>
             </div>
           </div>
@@ -117,7 +123,7 @@
               <div class="dashboard-card-head"><span>Receitas</span><span class="dashboard-card-icon income"><i data-lucide="arrow-down-left" aria-hidden="true"></i></span></div>
               <strong id="incomeTotal" class="dashboard-main-value income">R$ 0,00</strong>
               <div class="dashboard-submetrics">
-                <div><span>Recebido</span><strong id="incomeReceived">R$ 0,00</strong></div>
+                <div><span>Previsão</span><strong id="incomeForecast">R$ 0,00</strong></div>
                 <div><span>A receber</span><strong id="incomeReceivable">R$ 0,00</strong></div>
               </div>
             </button>
@@ -274,7 +280,19 @@
   <dialog id="dashboardDetailDialog" aria-labelledby="dashboardDetailTitle">
     <div class="dialog-heading"><div><span id="dashboardDetailEyebrow" class="eyebrow">Resumo</span><h2 id="dashboardDetailTitle">Detalhes</h2></div><button type="button" id="closeDashboardDetail" class="icon-button" aria-label="Fechar detalhes"><i data-lucide="x" aria-hidden="true"></i></button></div>
     <div id="dashboardDetailBody" class="dashboard-detail-body"></div>
-    <div class="form-actions"><button type="button" id="dashboardDetailAction" class="primary">Abrir seção</button></div>
+    <section id="dashboardExpenseDetails" class="dashboard-expense-details" hidden>
+      <div class="dashboard-expense-detail-head">
+        <div><span class="eyebrow">Detalhamento</span><strong>Despesas do mês</strong></div>
+        <label class="sr-only" for="dashboardExpenseMonth">Mês de referência</label>
+        <input id="dashboardExpenseMonth" type="month">
+      </div>
+      <div id="dashboardExpenseDetailSummary" class="dashboard-expense-detail-summary"></div>
+      <ul id="dashboardExpenseDetailList" class="dashboard-expense-detail-list"></ul>
+    </section>
+    <div class="form-actions">
+      <button type="button" id="dashboardDetailMore" class="soft" hidden>Mais detalhes</button>
+      <button type="button" id="dashboardDetailAction" class="primary">Abrir seção</button>
+    </div>
   </dialog>
   <dialog id="entryDialog" aria-labelledby="entryTitle">
     <form id="entryForm">
@@ -288,7 +306,22 @@
         <div id="countField"><label for="entryCount">Quantidade de meses</label><input id="entryCount" name="count" type="number" min="1" max="360" step="1" value="1" required></div><div id="endDateField" hidden><label for="entryEndDate">Data final</label><input id="entryEndDate" name="endDate" type="date" min="1900-01-01" max="9999-12-31"></div>
         <div id="categoryField"><label for="entryCategory">Tipo de despesa</label><select id="entryCategory" name="category"><option>Fixa</option><option>Fixa até</option><option>Variável</option></select></div>
       </div>
-      <fieldset id="customDates" hidden><legend>Competências escolhidas</legend><div class="custom-month-add"><input id="customMonthInput" type="month"><button id="addCustomMonth" type="button" class="soft">Adicionar mês</button></div><div id="customMonthList" class="month-chip-list"></div></fieldset>
+      <fieldset id="customDates" hidden>
+        <legend>Competências escolhidas</legend>
+        <div id="customExpenseRange" class="custom-expense-range" hidden>
+          <span class="custom-range-title">Adicionar intervalo</span>
+          <div class="custom-range-grid">
+            <div><label for="customRangeStart">De</label><input id="customRangeStart" type="month"></div>
+            <span class="custom-range-arrow" aria-hidden="true">→</span>
+            <div><label for="customRangeEnd">Até</label><input id="customRangeEnd" type="month"></div>
+            <button id="addCustomRange" type="button" class="soft">Adicionar intervalo</button>
+          </div>
+          <small id="customRangeHint" class="muted">Selecione o início e o fim.</small>
+        </div>
+        <div class="custom-single-title">Ou adicione uma competência avulsa</div>
+        <div class="custom-month-add"><input id="customMonthInput" type="month"><button id="addCustomMonth" type="button" class="soft">Adicionar mês</button></div>
+        <div id="customMonthList" class="month-chip-list"></div>
+      </fieldset>
       <fieldset id="legacyDates" hidden><legend>Confirme os vencimentos existentes</legend><div id="legacyDatesList"></div></fieldset>
       <p id="schedulePreview" class="muted"></p><p id="entryError" role="alert"></p>
       <div class="form-actions"><button type="button" id="cancelEntry">Cancelar</button><button class="primary" type="submit">Salvar lançamento</button></div>

@@ -1,4 +1,4 @@
-const CACHE='meu-financeiro-shell-v11';
+const CACHE='meu-financeiro-shell-v12';
 const SHELL=['./','index.html','styles.css','js/app.js','js/finance.js','js/repository.js','js/firebase-config.js','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))));self.clients.claim();});

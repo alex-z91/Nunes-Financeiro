@@ -238,12 +238,12 @@ function renderFlowChart(series){
   $('flowIncomeLine').setAttribute('d',path(series.income));$('flowExpenseLine').setAttribute('d',path(series.expense));
 }
 function setDashboardMetrics(summary,breakdown,commitment,animate=false){
-  $('balanceTotal').className=summary.balance<0?'expense':'income';const actualBalance=breakdown.incomeReceived-breakdown.expensePaid;$('actualBalanceTotal').className=actualBalance<0?'expense':'income';
+  $('balanceTotal').className=summary.balance<0?'expense':'income';const actualBalance=summary.income-breakdown.expensePaid;$('actualBalanceTotal').className=actualBalance<0?'expense':'income';$('incomeForecast').className=summary.balance<0?'expense':'income';
   const totalMovement=summary.income+summary.expenses,incomeShare=totalMovement?summary.income/totalMovement*100:0,expenseShare=totalMovement?summary.expenses/totalMovement*100:0;
   const setFrame=progress=>{
     const eased=1-Math.pow(1-progress,3);
     $('incomeTotal').textContent=money(Math.round(summary.income*eased));$('expenseTotal').textContent=money(Math.round(summary.expenses*eased));$('balanceTotal').textContent=money(Math.round(summary.balance*eased));$('actualBalanceTotal').textContent=money(Math.round(actualBalance*eased));
-    $('incomeReceived').textContent=money(Math.round(breakdown.incomeReceived*eased));$('incomeReceivable').textContent=money(Math.round(breakdown.incomeReceivable*eased));$('expensePaid').textContent=money(Math.round(breakdown.expensePaid*eased));$('expensePayable').textContent=money(Math.round(breakdown.expensePayable*eased));
+    $('incomeForecast').textContent=money(Math.round(summary.balance*eased));$('incomeReceivable').textContent=money(Math.round(breakdown.incomeReceivable*eased));$('expensePaid').textContent=money(Math.round(breakdown.expensePaid*eased));$('expensePayable').textContent=money(Math.round(breakdown.expensePayable*eased));
     $('analysisIncomeShare').textContent=`${Math.round(incomeShare*eased)}%`;$('analysisExpenseShare').textContent=`${Math.round(expenseShare*eased)}%`;$('analysisIncomeBar').style.width=`${incomeShare*eased}%`;$('analysisExpenseBar').style.width=`${expenseShare*eased}%`;
     $('commitmentValue').textContent=commitment===null?(progress<1?'0%':'Sem renda'):`${Math.round(commitment*eased)}%`;const width=commitment===null?100:Math.min(100,Math.max(0,commitment))*eased;$('commitmentBar').style.width=`${width}%`;$('commitmentBar').dataset.level=commitment===null||commitment>100?'danger':commitment>80?'warning':'ok';
   };
@@ -253,15 +253,35 @@ function setDashboardMetrics(summary,breakdown,commitment,animate=false){
 }
 function dashboardContext(){const period=dashboardPeriod();if(!period)return null;const summary=dashboardSummary(period),breakdown=dashboardBreakdown(summary);return {period,summary,breakdown};}
 function dashboardDetailRows(rows){const body=$('dashboardDetailBody');body.replaceChildren();rows.forEach(([label,value])=>{const row=node('div',undefined,'dashboard-detail-row');row.append(node('span',label),node('strong',value));body.append(row);});}
+function defaultExpenseDetailMonth(period){
+  if(period.mode==='month')return period.value;const current=today().slice(0,7);return current.startsWith(`${period.value}-`)?current:`${period.value}-01`;
+}
+function renderExpenseModalDetails(){
+  const month=$('dashboardExpenseMonth').value,target=$('dashboardExpenseDetailList');target.replaceChildren();if(!/^\d{4}-\d{2}$/.test(month)){return;}
+  const rows=occurrencesFor(state.data,month).filter(row=>row.collection==='despesas').sort((a,b)=>a.date.localeCompare(b.date)||a.name.localeCompare(b.name,'pt-BR'));
+  const planned=rows.reduce((sum,row)=>sum+row.cents,0),paid=rows.reduce((sum,row)=>sum+row.paymentCents,0);
+  $('dashboardExpenseDetailSummary').textContent=`${rows.length} item(ns) · ${money(planned)} previstos · ${money(paid)} pagos`;
+  if(!rows.length){target.append(node('li','Nenhuma despesa neste mês.','dashboard-expense-detail-empty'));return;}
+  for(const row of rows){
+    const li=node('li',undefined,'dashboard-expense-detail-item'),copy=node('div'),value=node('div',undefined,'dashboard-expense-detail-value');
+    copy.append(node('strong',row.name),node('small',`${row.category||'Despesa'} · ${displayDate(row.date)} · ${row.settled?'Pago':row.partial?'Parcial':'Pendente'}`));
+    value.append(node('strong',money(row.cents)),node('small',row.paymentCents?`Pago ${money(row.paymentCents)}`:`A pagar ${money(row.outstandingCents)}`));li.append(copy,value);target.append(li);
+  }
+}
+function setExpenseDetailsVisible(show){
+  $('dashboardExpenseDetails').hidden=!show;$('dashboardDetailMore').textContent=show?'Ocultar detalhes':'Mais detalhes';if(show)renderExpenseModalDetails();
+}
 function openDashboardDetail(kind){
-  const context=dashboardContext();if(!context)return;const {period,summary,breakdown}=context,dialog=$('dashboardDetailDialog'),action=$('dashboardDetailAction');
+  const context=dashboardContext();if(!context)return;const {period,summary,breakdown}=context,dialog=$('dashboardDetailDialog'),action=$('dashboardDetailAction'),more=$('dashboardDetailMore');
   const labels={receitas:['Receitas','Detalhes das receitas'],despesas:['Despesas','Detalhes das despesas'],fluxo:['Fluxo','Resumo do período']};const [eyebrow,title]=labels[kind]||labels.fluxo;$('dashboardDetailEyebrow').textContent=eyebrow;$('dashboardDetailTitle').textContent=title;
-  if(kind==='receitas'){dashboardDetailRows([['Período',period.label],['Previsto',money(summary.income)],['Recebido',money(breakdown.incomeReceived)],['A receber',money(breakdown.incomeReceivable)]]);action.hidden=false;action.textContent='Abrir receitas';action.dataset.targetPage='receitas';}
-  else if(kind==='despesas'){dashboardDetailRows([['Período',period.label],['Previsto',money(summary.expenses)],['Pago',money(breakdown.expensePaid)],['A pagar',money(breakdown.expensePayable)]]);action.hidden=false;action.textContent='Abrir despesas';action.dataset.targetPage='despesas';}
-  else{dashboardDetailRows([['Período',period.label],['Balanço atual',money(breakdown.incomeReceived-breakdown.expensePaid)],['Previsão',money(summary.balance)],['Comprometimento',summary.commitment===null?'Sem renda':`${Math.round(summary.commitment)}%`]]);action.hidden=true;delete action.dataset.targetPage;}
+  setExpenseDetailsVisible(false);more.hidden=kind!=='despesas';
+  if(kind==='receitas'){dashboardDetailRows([['Período',period.label],['Receitas',money(summary.income)],['Previsão',money(summary.balance)],['A receber',money(breakdown.incomeReceivable)]]);action.hidden=false;action.textContent='Abrir receitas';action.dataset.targetPage='receitas';}
+  else if(kind==='despesas'){dashboardDetailRows([['Período',period.label],['Previsto',money(summary.expenses)],['Pago',money(breakdown.expensePaid)],['A pagar',money(breakdown.expensePayable)]]);$('dashboardExpenseMonth').value=defaultExpenseDetailMonth(period);action.hidden=false;action.textContent='Abrir despesas';action.dataset.targetPage='despesas';}
+  else{dashboardDetailRows([['Período',period.label],['Balanço atual',money(summary.income-breakdown.expensePaid)],['Previsão',money(summary.balance)],['Comprometimento',summary.commitment===null?'Sem renda':`${Math.round(summary.commitment)}%`]]);action.hidden=true;delete action.dataset.targetPage;}
   dialog.showModal();
 }
 for(const card of document.querySelectorAll('[data-dashboard-detail]'))card.addEventListener('click',()=>openDashboardDetail(card.dataset.dashboardDetail));
+$('dashboardDetailMore').addEventListener('click',()=>setExpenseDetailsVisible($('dashboardExpenseDetails').hidden));$('dashboardExpenseMonth').addEventListener('change',renderExpenseModalDetails);
 $('closeDashboardDetail').addEventListener('click',()=>$('dashboardDetailDialog').close());$('dashboardDetailAction').addEventListener('click',()=>{const target=$('dashboardDetailAction').dataset.targetPage;if(target){$('dashboardDetailDialog').close();showPage(target);}});
 
 function reviewIssues(){
@@ -288,7 +308,7 @@ function renderReviewNotice(){
 function render(){
   if(!state.ready)return;
   const context=dashboardContext();if(!context)return;const {period,summary,breakdown}=context,commitment=summary.commitment;
-  $('actualSummary').textContent=`No período selecionado: ${money(breakdown.incomeReceived)} recebidos − ${money(breakdown.expensePaid)} pagos = ${money(breakdown.incomeReceived-breakdown.expensePaid)} de balanço atual.`;
+  $('actualSummary').textContent=`No período selecionado: ${money(summary.income)} em receitas − ${money(breakdown.expensePaid)} em despesas pagas = ${money(summary.income-breakdown.expensePaid)} de balanço atual.`;
   setDashboardMetrics(summary,breakdown,commitment,state.currentPage==='inicio'&&!state.dashboardAnimated);renderFlowChart(dashboardSeries(summary,period));
   const hasData=summary.income||summary.expenses;let status='Sem dados',tone='neutral',icon='→',description='Sem movimentação no período.';
   if(hasData&&summary.balance<0){status='Atenção';tone='negative';icon='↘';description=`Previsão de déficit de ${money(Math.abs(summary.balance))}.`;}
@@ -332,6 +352,22 @@ function renderCustomMonths(){
   state.customMonths.sort().forEach(month=>{const chip=node('span',undefined,'month-chip');chip.append(node('span',month.split('-').reverse().join('/')));const removeButton=action('×',()=>{state.customMonths=state.customMonths.filter(value=>value!==month);state.dirty=true;renderCustomMonths();previewSchedule();},`Remover ${month}`);removeButton.className='month-chip-remove';chip.append(removeButton);target.append(chip);});
 }
 $('addCustomMonth').addEventListener('click',()=>{const month=$('customMonthInput').value;if(!/^\d{4}-\d{2}$/.test(month)){notify('Escolha uma competência válida.',true);return;}if(!state.customMonths.includes(month))state.customMonths.push(month);$('customMonthInput').value='';state.dirty=true;renderCustomMonths();previewSchedule();});
+function customRangeMonths(start,end){
+  if(!/^\d{4}-\d{2}$/.test(start||'')||!/^\d{4}-\d{2}$/.test(end||''))return [];
+  const [sy,sm]=start.split('-').map(Number),[ey,em]=end.split('-').map(Number),first=sy*12+sm-1,last=ey*12+em-1;if(last<first||last-first+1>360)return [];
+  return Array.from({length:last-first+1},(_,i)=>{const value=first+i,y=Math.floor(value/12),m=value%12+1;return `${y}-${String(m).padStart(2,'0')}`;});
+}
+function syncCustomRange(source){
+  const start=$('customRangeStart'),end=$('customRangeEnd');
+  if(start.value){end.min=start.value;if(source==='start'&&end.value&&end.value<start.value)end.value=start.value;}else end.removeAttribute('min');
+  if(end.value){start.max=end.value;if(source==='end'&&start.value&&start.value>end.value)start.value=end.value;}else start.removeAttribute('max');
+  const months=customRangeMonths(start.value,end.value);$('customRangeHint').textContent=months.length?`${months.length} competência(s) serão adicionadas.`:'Selecione o início e o fim.';
+}
+$('customRangeStart').addEventListener('change',()=>syncCustomRange('start'));$('customRangeEnd').addEventListener('change',()=>syncCustomRange('end'));
+$('addCustomRange').addEventListener('click',()=>{
+  const months=customRangeMonths($('customRangeStart').value,$('customRangeEnd').value);if(!months.length){notify('Escolha um intervalo válido de até 360 meses.',true);return;}
+  state.customMonths=[...new Set([...state.customMonths,...months])].sort();state.dirty=true;renderCustomMonths();previewSchedule();notify(`${months.length} competência(s) adicionadas.`);
+});
 function openEntry(collection,entry=null){
   if(!state.ready){notify('Aguarde os dados carregarem.',true);return;}
   state.editing={collection,entry:entry?structuredClone(entry):null,id:entry?.id||crypto.randomUUID()};state.dirty=false;state.customMonths=entry?.mode==='custom'?(entry.occurrences||[]).map(p=>p.date.slice(0,7)):[];
@@ -350,8 +386,8 @@ function openEntry(collection,entry=null){
 function updateEntryFields(){
   const mode=$('entryMode').value,settled=state.editing?.entry?.occurrences.some(p=>(p.payments||[]).length),legacy=mode==='legacy',custom=mode==='custom',collection=state.editing?.collection,category=collection==='receitas'?'Fixa':$('entryCategory').value,fixedMonthly=mode==='monthly'&&category==='Fixa',fixedUntil=mode==='monthly'&&category==='Fixa até';
   $('valueLabel').textContent=(mode==='monthly'||custom)?'Valor por competência (R$)':mode==='single'?'Valor (R$)':'Valor total (R$)';$('dateLabel').textContent=mode==='single'?'Data prevista':'Primeiro vencimento';
-  $('countField').hidden=mode==='single'||legacy||custom||fixedMonthly||fixedUntil;$('endDateField').hidden=!fixedUntil;$('legacyDates').hidden=!legacy;$('customDates').hidden=!custom;$('entryDate').parentElement.hidden=legacy||custom;
-  for(const id of ['entryMode','entryValue','entryDate','entryEndDate','entryCount','customMonthInput','addCustomMonth'])$(id).disabled=!!settled||(legacy&&['entryDate','entryEndDate','entryCount'].includes(id));
+  $('countField').hidden=mode==='single'||legacy||custom||fixedMonthly||fixedUntil;$('endDateField').hidden=!fixedUntil;$('legacyDates').hidden=!legacy;$('customDates').hidden=!custom;$('customExpenseRange').hidden=!(custom&&collection==='despesas');$('entryDate').parentElement.hidden=legacy||custom;
+  for(const id of ['entryMode','entryValue','entryDate','entryEndDate','entryCount','customMonthInput','addCustomMonth','customRangeStart','customRangeEnd','addCustomRange'])$(id).disabled=!!settled||(legacy&&['entryDate','entryEndDate','entryCount'].includes(id));
   $('entryCount').required=mode==='installments'||(mode==='monthly'&&!fixedMonthly&&!fixedUntil);$('entryEndDate').required=fixedUntil;$('entryDate').required=!legacy&&!custom;
   $('legacyDatesList').querySelectorAll('input').forEach(input=>input.disabled=!!settled||!legacy);$('customMonthList').querySelectorAll('button').forEach(button=>button.disabled=!!settled);
   previewSchedule();
@@ -404,7 +440,7 @@ $('clearForm').addEventListener('submit',e=>{e.preventDefault();if($('clearConfi
 async function authChanged(user){
   const session=++state.session;state.unsubscribe?.();state.unsubscribe=null;state.uid=user?.uid||null;state.ready=false;state.profile={};state.data=normalize();
   setSettingsMenu(false);document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());state.editing=null;state.dirty=false;state.currentPage='inicio';state.visitedPages=new Set();state.dashboardAnimated=false;state.metricAnimationToken++;state.connectionNotified=false;state.incomeVisibleCount=30;$('notice').hidden=true;
-  for(const id of ['incomeList','expenseList','economyList','notesList'])$(id).replaceChildren();for(const id of ['incomeTotal','expenseTotal','balanceTotal','actualBalanceTotal','incomeReceived','incomeReceivable','expensePaid','expensePayable','economyBalance'])$(id).textContent='R$ 0,00';$('actualSummary').textContent='';$('reviewNotice').hidden=true;
+  for(const id of ['incomeList','expenseList','economyList','notesList'])$(id).replaceChildren();for(const id of ['incomeTotal','expenseTotal','balanceTotal','actualBalanceTotal','incomeForecast','incomeReceivable','expensePaid','expensePayable','economyBalance'])$(id).textContent='R$ 0,00';$('actualSummary').textContent='';$('reviewNotice').hidden=true;
   renderProfile();$('commitmentValue').textContent='0%';$('commitmentBar').style.width='0%';$('analysisIncomeShare').textContent='0%';$('analysisExpenseShare').textContent='0%';$('analysisIncomeBar').style.width='0%';$('analysisExpenseBar').style.width='0%';$('monthStatus').textContent='Sem dados';$('monthStatus').dataset.tone='neutral';$('trendIcon').textContent='→';$('monthDescription').textContent='Sem movimentação no período.';$('profilePhoto').value='';$('noteText').value='';$('auth').hidden=!!user;$('app').hidden=!user;$('authLoading').hidden=true;
   $('senhaLogin').value='';$('senhaCadastro').value='';$('confirmaSenha').value='';
   if(!user){showAuth('loginForm');renderProfile();return;}
