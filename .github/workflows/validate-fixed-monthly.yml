@@ -25,3 +25,5 @@ jobs:
       - run: node --check js/finance.js
       - run: node --check js/app.js
       - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
