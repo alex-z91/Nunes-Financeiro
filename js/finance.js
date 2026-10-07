@@ -61,6 +61,14 @@ export function customSchedule(amount, months) {
   if (!unique.length || unique.length > 360) throw new Error('Selecione entre 1 e 360 competências.');
   return unique.map((month,i)=>({id:`p${i+1}`,date:monthDate(month),cents:amount,payments:[],estimated:false}));
 }
+function inclusiveMonthCount(startDate,endDate) {
+  if (!validDate(startDate) || !validDate(endDate)) throw new Error('Informe um intervalo de datas válido.');
+  const [sy,sm]=startDate.split('-').map(Number),[ey,em]=endDate.split('-').map(Number);
+  const count=(ey-sy)*12+(em-sm)+1;
+  if (count<1) throw new Error('A data final deve ser igual ou posterior ao primeiro vencimento.');
+  if (count>360) throw new Error('O intervalo pode ter no máximo 360 meses.');
+  return count;
+}
 function recurringOccurrence(entry, month) {
   if (!entry?.openEnded || entry.mode!=='monthly' || entry.category!=='Fixa' || !validDate(entry.firstDate) || !/^\d{4}-\d{2}$/.test(month||'')) return null;
   const [fy,fm]=entry.firstDate.slice(0,7).split('-').map(Number),[y,m]=month.split('-').map(Number),offset=(y-fy)*12+(m-fm);
@@ -69,7 +77,7 @@ function recurringOccurrence(entry, month) {
   if (date.slice(0,7)!==month) return null;
   return {id:`m-${month}`,date,cents:entry.amountCents,payments:[],estimated:false};
 }
-export function makeEntry({id, name, value, date, count, mode, category='Fixa', revision=0, months=[]}) {
+export function makeEntry({id, name, value, date, endDate, count, mode, category='Fixa', revision=0, months=[]}) {
   const trimmed = name.trim();
   if (!trimmed || trimmed.length > 160) throw new Error('Informe um nome com até 160 caracteres.');
   if (!['single','installments','monthly','custom'].includes(mode)) throw new Error('Modalidade inválida.');
@@ -81,6 +89,10 @@ export function makeEntry({id, name, value, date, count, mode, category='Fixa', 
   if (mode==='monthly' && category==='Fixa') {
     if (!validDate(date)) throw new Error('Informe uma data válida.');
     return {id,name:trimmed,mode,category,amountCents:amount,firstDate:date,count:null,openEnded:true,revision,pendingReview:false,occurrences:[]};
+  }
+  if (mode==='monthly' && category==='Fixa até') {
+    const periods=inclusiveMonthCount(date,endDate);
+    return {id,name:trimmed,mode,category,amountCents:amount,firstDate:date,endDate,count:periods,openEnded:false,revision,pendingReview:false,occurrences:schedule(amount,periods,date,true)};
   }
   const periods = mode === 'single' ? 1 : Number(count);
   return {id, name:trimmed, mode, category, amountCents:amount, firstDate:date,
@@ -120,7 +132,7 @@ function paymentsFromOldStatus(status, date, plannedCents) {
 }
 function migrateCurrentGitHubEntry(raw,index,collection) {
   const amount=Math.round(Number(raw.valor)*100), name=String(raw.nome || '').trim(), type=raw.tipo || 'Fixa';
-  const base={id:`github-${collection[0]}-${index}`,name,amountCents:amount,category:collection==='despesas'?(type==='Variável'?'Variável':'Fixa'):'Fixa',revision:0,pendingReview:false,legacy:structuredClone(raw)};
+  const base={id:`github-${collection[0]}-${index}`,name,amountCents:amount,category:collection==='despesas'?(type==='Variável'?'Variável':type==='FixaAte'?'Fixa até':'Fixa'):'Fixa',revision:0,pendingReview:false,legacy:structuredClone(raw)};
   if (!name || !Number.isSafeInteger(amount) || amount<=0) return {...base,mode:'legacy',count:1,firstDate:null,pendingReview:true,occurrences:[]};
   let dates=[];
   if (type==='FixaAte') dates=oldIntervalDates(raw.intervaloCompleto);
@@ -135,7 +147,7 @@ function migrateCurrentGitHubEntry(raw,index,collection) {
     const status=raw.statusPagamento?.[`${monthName}_${year}`];
     return {id:`p${i+1}`,date,cents:amount,payments:paymentsFromOldStatus(status,date,amount),estimated:true};
   });
-  return {...base,mode:(type==='FixaAte'?'monthly':'custom'),count:occurrences.length,firstDate:occurrences[0].date,occurrences};
+  return {...base,mode:(type==='FixaAte'?'monthly':'custom'),count:occurrences.length,firstDate:occurrences[0].date,...(type==='FixaAte'?{endDate:occurrences.at(-1).date}:{}),occurrences};
 }
 function parseBrazilDate(value) {
   const match=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(value||''));

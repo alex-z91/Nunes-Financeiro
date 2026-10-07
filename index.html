@@ -285,8 +285,8 @@
         <div><label for="entryMode">Modalidade</label><select id="entryMode" name="mode"><option value="single">Única</option><option value="installments">Parcelada (valor total)</option><option value="monthly">Mensal (valor por mês)</option><option value="custom">Personalizada (meses escolhidos)</option><option value="legacy" hidden>Calendário existente</option></select></div>
         <div><label id="valueLabel" for="entryValue">Valor (R$)</label><input id="entryValue" name="value" type="number" inputmode="decimal" min="0.01" step="0.01" required></div>
         <div><label id="dateLabel" for="entryDate">Data prevista</label><input id="entryDate" name="date" type="date" min="1900-01-01" max="9999-12-31" required></div>
-        <div id="countField"><label for="entryCount">Quantidade de meses</label><input id="entryCount" name="count" type="number" min="1" max="360" step="1" value="1" required></div>
-        <div id="categoryField"><label for="entryCategory">Tipo de despesa</label><select id="entryCategory" name="category"><option>Fixa</option><option>Variável</option></select></div>
+        <div id="countField"><label for="entryCount">Quantidade de meses</label><input id="entryCount" name="count" type="number" min="1" max="360" step="1" value="1" required></div><div id="endDateField" hidden><label for="entryEndDate">Data final</label><input id="entryEndDate" name="endDate" type="date" min="1900-01-01" max="9999-12-31"></div>
+        <div id="categoryField"><label for="entryCategory">Tipo de despesa</label><select id="entryCategory" name="category"><option>Fixa</option><option>Fixa até</option><option>Variável</option></select></div>
       </div>
       <fieldset id="customDates" hidden><legend>Competências escolhidas</legend><div class="custom-month-add"><input id="customMonthInput" type="month"><button id="addCustomMonth" type="button" class="soft">Adicionar mês</button></div><div id="customMonthList" class="month-chip-list"></div></fieldset>
       <fieldset id="legacyDates" hidden><legend>Confirme os vencimentos existentes</legend><div id="legacyDatesList"></div></fieldset>
