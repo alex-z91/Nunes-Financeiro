@@ -1,0 +1,28 @@
+name: Client ZIP
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/client-zip.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare package
+        run: |
+          mkdir -p package
+          rsync -a ./ package/             --exclude '.git/'             --exclude '.github/'             --exclude 'node_modules/'             --exclude 'package/'             --exclude 'mobile-check.png'
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nunes-Financeiro-cliente
+          path: package/
+          include-hidden-files: true
+          retention-days: 7
