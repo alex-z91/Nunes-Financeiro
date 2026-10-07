@@ -272,7 +272,7 @@ function setExpenseDetailsVisible(show){
   $('dashboardExpenseDetails').hidden=!show;$('dashboardDetailMore').textContent=show?'Ocultar detalhes':'Mais detalhes';if(show)renderExpenseModalDetails();
 }
 function openDashboardDetail(kind){
-  const context=dashboardContext();if(!context)return;const {period,summary,breakdown}=context,dialog=$('dashboardDetailDialog'),action=$('dashboardDetailAction'),more=$('dashboardDetailMore');
+  const context=dashboardContext();if(!context)return;const {period,summary,breakdown}=context,dialog=$('dashboardDetailDialog'),action=$('dashboardDetailAction'),more=$('dashboardDetailMore');dialog.dataset.kind=kind;
   const labels={receitas:['Receitas','Detalhes das receitas'],despesas:['Despesas','Detalhes das despesas'],fluxo:['Fluxo','Resumo do período']};const [eyebrow,title]=labels[kind]||labels.fluxo;$('dashboardDetailEyebrow').textContent=eyebrow;$('dashboardDetailTitle').textContent=title;
   setExpenseDetailsVisible(false);more.hidden=kind!=='despesas';
   if(kind==='receitas'){dashboardDetailRows([['Período',period.label],['Receitas',money(summary.income)],['Previsão',money(summary.balance)],['A receber',money(breakdown.incomeReceivable)]]);action.hidden=false;action.textContent='Abrir receitas';action.dataset.targetPage='receitas';}

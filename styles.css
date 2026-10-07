@@ -276,6 +276,14 @@ button.dashboard-card:active{transform:scale(.992)}
 .custom-expense-range{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}.custom-range-title,.custom-single-title{display:block;margin-bottom:7px;color:var(--muted);font-size:10px;font-weight:600}.custom-single-title{margin-top:2px}
 .custom-range-grid{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:end}.custom-range-grid>div{min-width:0}.custom-range-grid label{margin-top:0}.custom-range-grid input{width:100%}.custom-range-grid button{grid-column:1/-1;min-height:38px}.custom-range-arrow{align-self:center;padding-top:18px;color:var(--muted);font-size:14px}.custom-expense-range small{display:block;margin-top:6px;font-size:9px}
 @media(max-width:520px){
+  #dashboardDetailDialog[data-kind="despesas"]{padding:18px;overflow:hidden}
+  #dashboardDetailDialog[data-kind="despesas"] .dashboard-detail-body{margin-top:8px}
+  #dashboardDetailDialog[data-kind="despesas"] .dashboard-detail-row:nth-child(n+2){display:none}
+  #dashboardDetailDialog[data-kind="despesas"] .dashboard-detail-row:first-child{padding:6px 0 8px}
+  #dashboardDetailDialog[data-kind="despesas"] .dashboard-expense-details{margin-top:8px;padding-top:10px}
+  #dashboardDetailDialog[data-kind="despesas"] .dashboard-expense-detail-summary{margin:7px 0 6px}
+  #dashboardDetailDialog[data-kind="despesas"] .dashboard-expense-detail-list{max-height:min(52dvh,430px);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  #dashboardDetailDialog[data-kind="despesas"] .form-actions{margin-top:12px}
   .dashboard-expense-detail-head{align-items:flex-start}.dashboard-expense-detail-head input{width:132px}
 }
 @media(min-width:760px){
