@@ -118,27 +118,31 @@
 
           <div class="dashboard-grid">
             <article class="dashboard-card dashboard-income dashboard-action-card">
+              <div class="dashboard-action-head">
+                <span>Receitas</span>
+                <button type="button" class="dashboard-card-add income" data-add="receitas" aria-label="Adicionar receita"><i data-lucide="plus" aria-hidden="true"></i><span>Adicionar</span></button>
+              </div>
               <button type="button" class="dashboard-card-main" data-dashboard-detail="receitas" aria-label="Ver detalhes das receitas do período">
-                <div class="dashboard-card-head"><span>Receitas</span></div>
                 <strong id="incomeTotal" class="dashboard-main-value income">R$ 0,00</strong>
                 <div class="dashboard-submetrics">
                   <div><span>Previsão</span><strong id="incomeForecast">R$ 0,00</strong></div>
                   <div><span>A receber</span><strong id="incomeReceivable">R$ 0,00</strong></div>
                 </div>
               </button>
-              <button type="button" class="dashboard-card-add income" data-add="receitas" aria-label="Adicionar receita"><i data-lucide="plus" aria-hidden="true"></i><span>Adicionar</span></button>
             </article>
 
             <article class="dashboard-card dashboard-expense dashboard-action-card">
+              <div class="dashboard-action-head">
+                <span>Despesas</span>
+                <button type="button" class="dashboard-card-add expense" data-add="despesas" aria-label="Adicionar despesa"><i data-lucide="plus" aria-hidden="true"></i><span>Adicionar</span></button>
+              </div>
               <button type="button" class="dashboard-card-main" data-dashboard-detail="despesas" aria-label="Ver detalhes das despesas do período">
-                <div class="dashboard-card-head"><span>Despesas</span></div>
                 <strong id="expenseTotal" class="dashboard-main-value expense">R$ 0,00</strong>
                 <div class="dashboard-submetrics">
                   <div><span>Pago</span><strong id="expensePaid">R$ 0,00</strong></div>
                   <div><span>A pagar</span><strong id="expensePayable">R$ 0,00</strong></div>
                 </div>
               </button>
-              <button type="button" class="dashboard-card-add expense" data-add="despesas" aria-label="Adicionar despesa"><i data-lucide="plus" aria-hidden="true"></i><span>Adicionar</span></button>
             </article>
 
             <button type="button" class="dashboard-card dashboard-flow" data-dashboard-detail="fluxo" aria-label="Ver detalhes do fluxo do período">

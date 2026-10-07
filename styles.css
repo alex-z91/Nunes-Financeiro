@@ -260,13 +260,13 @@ button.dashboard-card:active{transform:scale(.992)}
 }
 
 /* R4 — ajustes finais de operação */
-.dashboard-action-card{padding:0}
-.dashboard-card-main{display:block;width:100%;min-height:100%;padding:15px;border:0;border-radius:inherit;background:transparent;color:inherit;text-align:left;font-weight:400}
+.dashboard-action-card{padding:15px;display:flex;flex-direction:column}
+.dashboard-action-head{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--muted);font-size:11px;font-weight:600;line-height:1}
+.dashboard-card-main{display:block;width:100%;min-height:0;flex:1;padding:0;border:0;border-radius:12px;background:transparent;color:inherit;text-align:left;font-weight:400}
 .dashboard-card-main:hover{border:0;background:transparent;transform:none}.dashboard-card-main:active{transform:scale(.994)}
-.dashboard-card-add{position:absolute;top:13px;right:13px;z-index:2;min-height:30px;padding:5px 9px 5px 7px;border:1px solid transparent;border-radius:999px;display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:600;line-height:1;cursor:pointer;box-shadow:none}
-.dashboard-card-add svg{width:13px;height:13px}.dashboard-card-add.income{background:var(--income-soft);color:var(--income);border-color:color-mix(in srgb,var(--income) 14%,transparent)}.dashboard-card-add.expense{background:var(--expense-soft);color:var(--expense);border-color:color-mix(in srgb,var(--expense) 14%,transparent)}
+.dashboard-card-add{position:static;flex:0 0 auto;min-height:30px;padding:5px 9px;border:1px solid transparent;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:9px;font-weight:600;line-height:1;cursor:pointer;box-shadow:none}
+.dashboard-card-add svg{display:block;width:13px;height:13px;flex:0 0 13px}.dashboard-card-add span{display:block;line-height:1}.dashboard-card-add.income{background:var(--income-soft);color:var(--income);border-color:color-mix(in srgb,var(--income) 14%,transparent)}.dashboard-card-add.expense{background:var(--expense-soft);color:var(--expense);border-color:color-mix(in srgb,var(--expense) 14%,transparent)}
 .dashboard-card-add:hover{transform:translateY(-1px);filter:brightness(.98)}.dashboard-card-add:active{transform:scale(.97)}
-.dashboard-action-card .dashboard-card-head{padding-right:82px}
 .dashboard-expense-details{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
 #dashboardDetailAction[data-target-page="despesas"]{background:transparent;border-color:transparent;box-shadow:none;color:var(--text)}
 #dashboardDetailAction[data-target-page="despesas"]:hover{background:var(--surface-soft);border-color:transparent;transform:none}
@@ -292,12 +292,11 @@ button.dashboard-card:active{transform:scale(.992)}
 }
 
 
-@media(min-width:430px){.dashboard-action-card{padding:0}.dashboard-action-card .dashboard-card-main{padding:17px}.dashboard-card-add{top:15px;right:15px}}
-@media(min-width:600px){.dashboard-action-card{padding:0}.dashboard-action-card .dashboard-card-main{padding:19px}.dashboard-card-add{top:17px;right:17px}}
-@media(min-width:900px){.dashboard-action-card{padding:0}.dashboard-action-card .dashboard-card-main{padding:20px}.dashboard-card-add{top:18px;right:18px}}
+@media(min-width:430px){.dashboard-action-card{padding:17px}}
+@media(min-width:600px){.dashboard-action-card{padding:19px}}
+@media(min-width:900px){.dashboard-action-card{padding:20px}}
 
 @media(max-width:360px){
   .dashboard-card-add span{display:none}
-  .dashboard-card-add{width:32px;min-width:32px;padding:0;justify-content:center}
-  .dashboard-action-card .dashboard-card-head{padding-right:38px}
+  .dashboard-card-add{width:32px;min-width:32px;padding:0}
 }
