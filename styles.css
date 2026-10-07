@@ -267,6 +267,8 @@ button.dashboard-card:active{transform:scale(.992)}
 .dashboard-card-add:hover{transform:scale(1.06);border:0}.dashboard-card-add:active{transform:scale(.96)}
 .dashboard-action-card .dashboard-card-head{padding-right:38px}
 .dashboard-expense-details{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+#dashboardDetailAction[data-target-page="despesas"]{background:transparent;border-color:transparent;box-shadow:none;color:var(--text)}
+#dashboardDetailAction[data-target-page="despesas"]:hover{background:var(--surface-soft);border-color:transparent;transform:none}
 .dashboard-expense-detail-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}.dashboard-expense-detail-head>div{display:grid;gap:2px}.dashboard-expense-detail-head strong{font-size:12px}.dashboard-expense-detail-head input{width:142px;min-height:36px;font-size:11px}
 .dashboard-expense-detail-summary{margin:10px 0 7px;color:var(--muted);font-size:10px}
 .dashboard-expense-detail-list{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
