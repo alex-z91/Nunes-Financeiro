@@ -104,12 +104,13 @@
             </div>
             <div class="dashboard-period" aria-label="Período da análise">
               <div class="period-controls">
+                <button id="openNotesDialog" class="notes-button" type="button" aria-label="Abrir anotações" title="Anotações"><i data-lucide="notebook-pen" aria-hidden="true"></i><span>Anotações</span></button>
+              </div>
                 <div class="period-mode" role="group" aria-label="Tipo de período">
                   <button type="button" data-period-mode="month" aria-pressed="true">Mensal</button>
                   <button type="button" data-period-mode="year" aria-pressed="false">Anual</button>
                 </div>
-                <button id="openNotesDialog" class="notes-button" type="button" aria-label="Abrir anotações" title="Anotações"><i data-lucide="notebook-pen" aria-hidden="true"></i><span>Anotações</span></button>
-              </div>
+                
               <div class="period-inputs">
                 <label class="sr-only" for="monthFilter">Mês da análise</label>
                 <input id="monthFilter" type="month" required>
