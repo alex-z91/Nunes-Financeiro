@@ -24,6 +24,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Configure custom domain
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method PUT "repos/${GITHUB_REPOSITORY}/pages" -f cname="amostra.alexcoder.space"
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
