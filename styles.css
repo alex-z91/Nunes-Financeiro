@@ -74,7 +74,7 @@ svg{width:18px;height:18px;stroke-width:1.65}.icon-button{width:42px;min-width:4
 .auth-screen::before{content:"";position:absolute;width:440px;height:440px;border-radius:50%;background:var(--accent);filter:blur(110px);opacity:.12;right:-180px;top:-210px;pointer-events:none}
 .auth-screen::after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:#000;filter:blur(130px);opacity:.06;left:-120px;bottom:-120px;pointer-events:none}
 .auth-container{width:min(100%,430px);position:relative;z-index:1}
-.auth-brand{display:block;width:60%;height:auto;aspect-ratio:1946/538;object-fit:contain;margin:0 auto 14px;flex:0 0 auto}body.dark .auth-brand{filter:brightness(0) invert(1)}
+.auth-brand{display:block;width:60%;height:auto;aspect-ratio:1946/538;object-fit:contain;margin:0 auto 14px;flex:0 0 auto}.auth-brand-dark{display:none}body.dark .auth-brand-light{display:none}body.dark .auth-brand-dark{display:block}
 .brand-mark>span{width:16px;height:16px;border-radius:50%;background:var(--accent);display:block}
 .slogan{text-align:center;color:var(--muted);font-size:13px;margin:0 0 20px}
 .login-box{background:var(--surface);padding:28px;border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-sm)}
