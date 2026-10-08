@@ -274,7 +274,9 @@ function renderExpenseModalDetails(){
   for(const row of rows){
     const li=node('li',undefined,'dashboard-expense-detail-item'),copy=node('div'),value=node('div',undefined,'dashboard-expense-detail-value');
     copy.append(node('strong',row.name),node('small',`${row.category||'Despesa'} · ${displayDate(row.date)} · ${row.settled?'Pago':row.partial?'Parcial':'Pendente'}`));
-    value.append(node('strong',money(row.cents)),node('small',row.paymentCents?`Pago ${money(row.paymentCents)}`:`A pagar ${money(row.outstandingCents)}`));li.append(copy,value);target.append(li);
+    value.append(node('strong',money(row.cents)),node('small',row.paymentCents?`Pago ${money(row.paymentCents)}`:`A pagar ${money(row.outstandingCents)}`));
+    if(!row.settled){const pay=action('Marcar como pago',()=>settle(row),`Marcar como pago: ${row.name}`);pay.className='dashboard-expense-detail-pay';value.append(pay);}
+    li.append(copy,value);target.append(li);
   }
 }
 function setExpenseDetailsVisible(show){
