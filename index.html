@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=26">
+  <link rel="stylesheet" href="styles.css?v=27">
 </head>
 <body>
   <a class="skip-link" href="#main">Ir para o conteúdo</a>
@@ -103,9 +103,12 @@
               <p>Desempenho do período em uma leitura rápida.</p>
             </div>
             <div class="dashboard-period" aria-label="Período da análise">
-              <div class="period-mode" role="group" aria-label="Tipo de período">
-                <button type="button" data-period-mode="month" aria-pressed="true">Mensal</button>
-                <button type="button" data-period-mode="year" aria-pressed="false">Anual</button>
+              <div class="period-controls">
+                <div class="period-mode" role="group" aria-label="Tipo de período">
+                  <button type="button" data-period-mode="month" aria-pressed="true">Mensal</button>
+                  <button type="button" data-period-mode="year" aria-pressed="false">Anual</button>
+                </div>
+                <button id="openNotesDialog" class="notes-button" type="button" aria-label="Abrir anotações" title="Anotações"><i data-lucide="notebook-pen" aria-hidden="true"></i><span>Anotações</span></button>
               </div>
               <div class="period-inputs">
                 <label class="sr-only" for="monthFilter">Mês da análise</label>
@@ -198,7 +201,6 @@
             </section>
           </div>
 
-          <section class="quadrant dashboard-notes"><div class="section-heading-inline"><div><span class="eyebrow">Apoio</span><h2>Anotações</h2></div></div><form id="noteForm"><label for="noteText">Nova anotação</label><div class="note-input"><input id="noteText" name="text" maxlength="1000" required><button class="primary" type="submit">Adicionar</button></div></form><div class="notes-scroll"><ul id="notesList" class="entry-list"></ul></div></section>
         </section>
 
         <section id="page-receitas" class="page statement-page" hidden>
@@ -285,6 +287,14 @@
       <button type="button" data-page="configuracoes" aria-label="Configurações"><i data-lucide="settings-2" aria-hidden="true"></i><span>Ajustes</span></button>
     </nav>
   </div>
+  <dialog id="notesDialog" class="notes-dialog" aria-labelledby="notesDialogTitle">
+    <div class="dialog-heading"><div><span class="eyebrow">Apoio</span><h2 id="notesDialogTitle">Anotações</h2></div><button type="button" id="closeNotesDialog" class="icon-button" aria-label="Fechar anotações"><i data-lucide="x" aria-hidden="true"></i></button></div>
+    <form id="noteForm">
+      <label for="noteText">Nova anotação</label>
+      <div class="note-input"><input id="noteText" name="text" maxlength="1000" required><button class="primary" type="submit">Adicionar</button></div>
+    </form>
+    <div class="notes-scroll"><ul id="notesList" class="entry-list"></ul></div>
+  </dialog>
   <dialog id="dashboardDetailDialog" aria-labelledby="dashboardDetailTitle">
     <div class="dialog-heading"><div><span id="dashboardDetailEyebrow" class="eyebrow">Resumo</span><h2 id="dashboardDetailTitle">Detalhes</h2></div><button type="button" id="closeDashboardDetail" class="icon-button" aria-label="Fechar detalhes"><i data-lucide="x" aria-hidden="true"></i></button></div>
     <div id="dashboardDetailBody" class="dashboard-detail-body"></div>
@@ -345,7 +355,7 @@
   <noscript>Ative o JavaScript para acessar o sistema financeiro.</noscript>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
   <script>window.lucide?.createIcons();</script>
-  <script type="module" src="js/app.js?v=26"></script>
-  <script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js?v=26").catch(()=>{}));}</script>
+  <script type="module" src="js/app.js?v=27"></script>
+  <script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js?v=27").catch(()=>{}));}</script>
 </body>
 </html>
